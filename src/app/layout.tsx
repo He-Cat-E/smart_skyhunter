@@ -1,0 +1,70 @@
+import type { Metadata } from "next";
+import { Plus_Jakarta_Sans, Inter, Space_Grotesk } from "next/font/google";
+import "./globals.css";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { AuthProvider } from "@/components/AuthProvider";
+
+// Variable fonts: omitting `weight` loads a single variable file that covers
+// every weight we use (Tailwind's medium→extrabold), instead of one static
+// file per weight — fewer requests, smaller total payload, faster text paint.
+// These are variable fonts; next/font serves the variable file (covering every
+// weight Tailwind uses) whether or not we pin weights, so we omit the arrays.
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
+
+// Distinctive wordmark font for the "SkyHunter" brand name only.
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "SkyHunter — Build. Innovate. Elevate.",
+  description:
+    "SkyHunter is launching soon: the elevated job platform for people ready to rise above the AI shakeup. Sign up now for early access.",
+  keywords: [
+    "SkyHunter",
+    "AI job loss",
+    "career reinvention",
+    "early access",
+    "job platform",
+  ],
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html
+      lang="en"
+      className={`${jakarta.variable} ${inter.variable} ${spaceGrotesk.variable}`}
+    >
+      <body className="min-h-screen antialiased">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-blue-500 focus:px-4 focus:py-2 focus:text-white"
+        >
+          Skip to content
+        </a>
+        <AuthProvider>
+          <Navbar />
+          <main id="main">{children}</main>
+          <Footer />
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
