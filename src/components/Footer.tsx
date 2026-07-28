@@ -52,8 +52,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="tel:988" className="hover:text-blue-300">
-                  Call or text 988
+                <a
+                  href="https://988lifeline.org/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-300"
+                >
+                  Call, text, or chat 988
                 </a>
               </li>
               <li>

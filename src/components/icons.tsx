@@ -162,3 +162,12 @@ export function Trash({ className = "" }: { className?: string }) {
     </svg>
   );
 }
+
+// Telegram paper-plane (filled) — use on a colored badge with white text.
+export function Telegram({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M21.94 4.3 18.9 19.06c-.22 1-.82 1.25-1.66.78l-4.6-3.39-2.22 2.14c-.25.24-.45.45-.92.45l.33-4.68 8.52-7.7c.37-.33-.08-.51-.58-.18L7.24 13.3l-4.53-1.42c-.98-.31-1-.98.2-1.45L20.4 3.07c.82-.3 1.54.18 1.27 1.16z" />
+    </svg>
+  );
+}
