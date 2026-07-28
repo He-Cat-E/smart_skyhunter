@@ -5,6 +5,7 @@ import { sendVerificationEmail } from "@/lib/email";
 import { recordSignup } from "@/lib/sheet";
 import { notifyUser, notifyAdmins } from "@/lib/notify";
 import { passwordError } from "@/lib/password";
+import { lookupSignupMeta } from "@/lib/geo";
 import { IS_DEV } from "@/lib/flags";
 
 export const runtime = "nodejs";
@@ -65,11 +66,16 @@ export async function POST(req: Request) {
     );
   }
 
+  // Capture where the account is signing up from + whether they're behind a
+  // VPN/proxy or a VPS/hosting IP. Stored on the profile (admin-only).
+  const signup = await lookupSignupMeta(req.headers);
+
   const profile = {
     previousRole: String(body.previousRole ?? "").trim(),
     industry: String(body.industry ?? "").trim(),
     situation: String(body.situation ?? "").trim(),
     location,
+    signup,
   };
 
   // In local dev, skip email verification and create the account immediately.

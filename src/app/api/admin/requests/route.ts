@@ -4,7 +4,9 @@ import {
   introUpdateStatus,
   introSchedule,
   introCreateScheduled,
+  introDelete,
   applicationUpdateStatus,
+  applicationDelete,
 } from "@/lib/store";
 import { notifyUser } from "@/lib/notify";
 import {
@@ -173,6 +175,51 @@ export async function PATCH(req: Request) {
       });
     }
     return NextResponse.json({ ok: true, notified: !!row });
+  }
+
+  return NextResponse.json({ ok: false, error: "Unknown request type." }, { status: 400 });
+}
+
+// Admin deletes a member's request (interview or job application). The member
+// is notified that it was removed.
+export async function DELETE(req: Request) {
+  const admin = await requireAdmin();
+  if (!admin) {
+    return NextResponse.json({ ok: false, error: "Forbidden." }, { status: 403 });
+  }
+
+  const body = await req.json().catch(() => null);
+  const type = String(body?.type ?? "").trim();
+  const id = String(body?.id ?? "").trim();
+  if (!id) {
+    return NextResponse.json({ ok: false, error: "Missing id." }, { status: 400 });
+  }
+
+  if (type === "interview") {
+    const row = await introDelete(id);
+    if (row) {
+      const context = row.partner
+        ? ` (${row.partner}${row.role ? ` – ${row.role}` : ""})`
+        : "";
+      await notifyUser(row.email, {
+        type: "request-update",
+        title: "Interview request removed",
+        body: `Your interview request${context} was removed by the SkyHunter team. Reach out to support if you have questions.`,
+      });
+    }
+    return NextResponse.json({ ok: true, deleted: !!row, notified: !!row });
+  }
+
+  if (type === "application") {
+    const row = await applicationDelete(id);
+    if (row) {
+      await notifyUser(row.email, {
+        type: "request-update",
+        title: "Application removed",
+        body: `Your application for ${row.jobTitle || "a role"} was removed by the SkyHunter team. You can re-apply anytime.`,
+      });
+    }
+    return NextResponse.json({ ok: true, deleted: !!row, notified: !!row });
   }
 
   return NextResponse.json({ ok: false, error: "Unknown request type." }, { status: 400 });

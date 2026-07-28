@@ -6,13 +6,13 @@
   accent, hairline borders, and generous but tidy spacing.
 */
 @theme {
-  /* surfaces */
-  --color-void: #ffffff;        /* page + inputs */
-  --color-abyss: #f7f9fa;       /* light section band */
+  /* surfaces — tuned cool to sit on the blue-sky backdrop */
+  --color-void: #ffffff;        /* cards + inputs (stay opaque for readability) */
+  --color-abyss: rgba(226, 240, 255, 0.6); /* sky-tinted glass band (lets the sky show through) */
   --color-navy: #ffffff;        /* cards */
-  --color-navy-soft: #f3f4f6;   /* hover */
-  --color-steel: #f2f4f5;       /* chips */
-  --color-steel-line: #d1d7dc;  /* borders */
+  --color-navy-soft: #e9f2fc;   /* hover — soft sky tint */
+  --color-steel: #e8f1fb;       /* chips — light sky */
+  --color-steel-line: #c0d4ea;  /* borders — soft sky-blue hairline */
 
   /* text */
   --color-chrome: #1c1d1f;      /* headings / strong */
@@ -39,7 +39,25 @@ html {
 }
 
 body {
-  background-color: var(--color-void);
+  /* Blue-sky backdrop behind every page. Fixed so it stays put while scrolling
+     and reads consistently across the whole site. A soft sun-haze up top fades
+     to a pale horizon so dark text and white cards stay readable over it. */
+  background:
+    radial-gradient(
+      1200px 620px at 72% -12%,
+      rgba(255, 255, 255, 0.9),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      #8ec5ff 0%,
+      #a9d6ff 26%,
+      #cbe6ff 52%,
+      #e6f3ff 78%,
+      #f3f9ff 100%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--color-mist);
   font-family: var(--font-sans);
   color-scheme: light;
@@ -51,11 +69,12 @@ body {
   background: rgba(135, 16, 216, 0.16);
 }
 
-/* Subtle lavender wash for hero surfaces — restrained, not a gradient banner. */
+/* Hero wash — transparent so the page's blue sky shows through, plus a soft
+   bright haze at the top and a whisper of brand violet. */
 .bg-sky-art {
   background:
-    radial-gradient(120% 90% at 50% -30%, rgba(135, 16, 216, 0.07), transparent 60%),
-    var(--color-void);
+    radial-gradient(120% 90% at 50% -25%, rgba(255, 255, 255, 0.55), transparent 60%),
+    radial-gradient(90% 70% at 50% -30%, rgba(135, 16, 216, 0.06), transparent 60%);
 }
 
 /* Two-tone wordmark: dark "Hunter", violet "Sky". */
@@ -84,11 +103,11 @@ body {
   );
 }
 
-/* Soft card shadow, light-theme friendly. */
+/* Soft card shadow — cool blue-tinted to sit naturally on the sky. */
 .lift {
   box-shadow:
-    0 1px 2px rgba(28, 29, 31, 0.07),
-    0 14px 34px -16px rgba(28, 29, 31, 0.18);
+    0 1px 2px rgba(30, 58, 110, 0.08),
+    0 16px 38px -18px rgba(30, 58, 110, 0.28);
 }
 
 @keyframes rise-in {

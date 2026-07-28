@@ -87,7 +87,7 @@ export const STORIES: Story[] = [
     monthsToRehire: 3,
     initials: "MD",
     accent: "clay",
-    avatar: "/members/m1.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
   },
   {
     name: "Priya S.",
@@ -98,7 +98,7 @@ export const STORIES: Story[] = [
     monthsToRehire: 2,
     initials: "PS",
     accent: "sage",
-    avatar: "/members/w1.jpg",
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
     name: "Terrell W.",
@@ -109,7 +109,7 @@ export const STORIES: Story[] = [
     monthsToRehire: 4,
     initials: "TW",
     accent: "sky",
-    avatar: "/members/m2.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/75.jpg",
   },
 ];
 

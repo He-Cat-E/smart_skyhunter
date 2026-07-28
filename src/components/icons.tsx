@@ -144,3 +144,21 @@ export function Compass({ className = "" }: { className?: string }) {
     </svg>
   );
 }
+
+export function Calendar({ className = "" }: { className?: string }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+      <path d="M8 3v4M16 3v4M3.5 9.5h17" />
+    </svg>
+  );
+}
+
+export function Trash({ className = "" }: { className?: string }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <path d="M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1z" />
+      <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11.5v5.5M14 11.5v5.5" />
+    </svg>
+  );
+}

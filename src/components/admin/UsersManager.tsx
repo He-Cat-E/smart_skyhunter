@@ -12,6 +12,13 @@ export type AdminUser = {
   createdAt: string;
   industry: string;
   location: string;
+  // Signup IP intelligence (admin-only)
+  signupLocation?: string; // geo-derived "City, Region, Country"
+  signupIp?: string;
+  isp?: string;
+  vpn?: boolean; // signed up behind a VPN/proxy/Tor
+  vps?: boolean; // signed up from a hosting/VPS IP
+  ipChecked?: boolean; // the intel lookup actually ran
 };
 
 export function UsersManager({
@@ -26,10 +33,12 @@ export function UsersManager({
   const [busy, setBusy] = useState<string | null>(null);
 
   const filtered = users.filter((u) =>
-    `${u.name} ${u.email} ${u.industry} ${u.location}`
+    `${u.name} ${u.email} ${u.industry} ${u.location} ${u.signupLocation ?? ""} ${u.isp ?? ""} ${u.signupIp ?? ""}${u.vpn ? " vpn" : ""}${u.vps ? " vps" : ""}`
       .toLowerCase()
       .includes(q.trim().toLowerCase()),
   );
+
+  const flaggedCount = users.filter((u) => u.vpn || u.vps).length;
 
   async function toggleAdmin(u: AdminUser) {
     setBusy(u.email);
@@ -89,20 +98,28 @@ export function UsersManager({
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search name, email, industry…"
+          placeholder="Search name, email, location, ISP, “vpn”, “vps”…"
           className="w-full max-w-sm rounded-xl border border-steel-line bg-void px-4 py-2.5 text-sm text-chrome outline-none placeholder:text-faint focus:border-blue-500"
         />
-        <span className="shrink-0 text-sm text-fog">
-          {filtered.length} of {users.length}
-        </span>
+        <div className="flex shrink-0 items-center gap-3 text-sm text-fog">
+          {flaggedCount > 0 && (
+            <span className="rounded-md bg-amber-400/10 px-2 py-1 text-xs font-semibold text-amber-600 ring-1 ring-amber-400/30">
+              {flaggedCount} VPN/VPS
+            </span>
+          )}
+          <span>
+            {filtered.length} of {users.length}
+          </span>
+        </div>
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-2xl border border-steel-line">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[860px] text-left text-sm">
           <thead className="bg-navy text-xs uppercase tracking-wider text-fog">
             <tr>
               <th className="px-4 py-3 font-semibold">User</th>
               <th className="px-4 py-3 font-semibold">Signed up</th>
+              <th className="px-4 py-3 font-semibold">Location &amp; network</th>
               <th className="px-4 py-3 font-semibold">Via</th>
               <th className="px-4 py-3 font-semibold">Role</th>
               <th className="px-4 py-3 text-right font-semibold">Actions</th>
@@ -136,6 +153,39 @@ export function UsersManager({
                     month: "short",
                     day: "numeric",
                   })}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="text-mist">{u.signupLocation || "—"}</div>
+                  {u.isp && (
+                    <div className="text-xs text-fog" title={u.isp}>
+                      {u.isp}
+                    </div>
+                  )}
+                  <div className="mt-1 flex flex-wrap items-center gap-1">
+                    {u.vpn && (
+                      <span className="rounded bg-amber-400/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-amber-600 ring-1 ring-amber-400/30">
+                        VPN / proxy
+                      </span>
+                    )}
+                    {u.vps && (
+                      <span className="rounded bg-red-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-red-600 ring-1 ring-red-500/30">
+                        VPS / hosting
+                      </span>
+                    )}
+                    {u.ipChecked && !u.vpn && !u.vps && (
+                      <span className="rounded bg-cyan/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-cyan ring-1 ring-cyan/25">
+                        Direct
+                      </span>
+                    )}
+                    {!u.ipChecked && (
+                      <span className="text-[0.65rem] text-faint">not checked</span>
+                    )}
+                  </div>
+                  {u.signupIp && (
+                    <div className="mt-0.5 font-mono text-[0.65rem] text-faint">
+                      {u.signupIp}
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-mist">
                   {u.provider ?? "Email"}
@@ -183,7 +233,7 @@ export function UsersManager({
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-fog">
+                <td colSpan={6} className="px-4 py-8 text-center text-fog">
                   No users match.
                 </td>
               </tr>

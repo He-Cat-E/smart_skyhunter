@@ -113,7 +113,7 @@ export const MEMBERS: Member[] = [
     location: "Toronto, CA",
     blurb:
       "Former IT support. Now builds and supervises automation workflows for a remote team.",
-    photo: "/members/m1.jpg",
+    photo: "https://randomuser.me/api/portraits/men/11.jpg",
     persona: "Remote professional",
   },
   {
@@ -122,7 +122,7 @@ export const MEMBERS: Member[] = [
     location: "Austin, TX",
     blurb:
       "Left retail management, reskilled through free courses, and moved into product research.",
-    photo: "/members/w1.jpg",
+    photo: "https://randomuser.me/api/portraits/women/21.jpg",
     persona: "New-skill learner",
   },
   {
@@ -131,7 +131,7 @@ export const MEMBERS: Member[] = [
     location: "Remote",
     blurb:
       "Picks up flexible AI data-review projects on SkyHunter for steady extra income.",
-    photo: "/members/m2.jpg",
+    photo: "https://randomuser.me/api/portraits/men/22.jpg",
     persona: "Income seeker",
   },
   {
@@ -140,7 +140,7 @@ export const MEMBERS: Member[] = [
     location: "Berlin, DE",
     blurb:
       "Runs a small studio and hires vetted SkyHunter contributors for AI-oversight work.",
-    photo: "/members/w2.jpg",
+    photo: "https://randomuser.me/api/portraits/women/33.jpg",
     persona: "Project owner",
   },
   {
@@ -149,7 +149,7 @@ export const MEMBERS: Member[] = [
     location: "Manchester, UK",
     blurb:
       "A veteran editor who now gives machine-drafted content a real human voice.",
-    photo: "/members/m3.jpg",
+    photo: "https://randomuser.me/api/portraits/men/46.jpg",
     persona: "Remote professional",
   },
   {
@@ -158,7 +158,7 @@ export const MEMBERS: Member[] = [
     location: "Chicago, IL",
     blurb:
       "Teaches evening cohorts, helping career-changers find their footing in new fields.",
-    photo: "/members/w3.jpg",
+    photo: "https://randomuser.me/api/portraits/women/57.jpg",
     persona: "Educator",
   },
 ];
@@ -298,6 +298,7 @@ export type Partner = {
   offer: string;
   initials: string;
   accent: "clay" | "sage" | "sky";
+  photo?: string; // real portrait; falls back to initials if unset
 };
 
 export const PARTNERS: Partner[] = [
@@ -308,6 +309,7 @@ export const PARTNERS: Partner[] = [
     offer: "Paid contracts building & supervising AI-oversight dashboards — no CS degree required.",
     initials: "MC",
     accent: "sky",
+    photo: "https://randomuser.me/api/portraits/men/52.jpg",
   },
   {
     name: "Elena Ruiz",
@@ -316,6 +318,7 @@ export const PARTNERS: Partner[] = [
     offer: "3–6 month contracts for content reviewers and QA specialists.",
     initials: "ER",
     accent: "sage",
+    photo: "https://randomuser.me/api/portraits/women/63.jpg",
   },
   {
     name: "David Osei",
@@ -324,6 +327,7 @@ export const PARTNERS: Partner[] = [
     offer: "Remote data-labeling & prompt-writing contracts, $30–55/hr.",
     initials: "DO",
     accent: "clay",
+    photo: "https://randomuser.me/api/portraits/men/67.jpg",
   },
   {
     name: "Priya Nair",
@@ -332,6 +336,7 @@ export const PARTNERS: Partner[] = [
     offer: "Part-time operations and customer-success contracts, flexible hours.",
     initials: "PN",
     accent: "sky",
+    photo: "https://randomuser.me/api/portraits/women/68.jpg",
   },
   {
     name: "Tomás Vidal",
@@ -340,6 +345,7 @@ export const PARTNERS: Partner[] = [
     offer: "Short project contracts for editors and localization reviewers.",
     initials: "TV",
     accent: "sage",
+    photo: "https://randomuser.me/api/portraits/men/85.jpg",
   },
   {
     name: "Aisha Khan",
@@ -348,6 +354,7 @@ export const PARTNERS: Partner[] = [
     offer: "Ongoing contracts for AI application testers and output evaluators.",
     initials: "AK",
     accent: "clay",
+    photo: "https://randomuser.me/api/portraits/women/12.jpg",
   },
 ];
 

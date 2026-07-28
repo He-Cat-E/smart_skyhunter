@@ -9,7 +9,7 @@ import {
   OPEN_STATUSES,
   formatSchedule,
 } from "@/lib/requests";
-import { Spinner, Check } from "@/components/icons";
+import { Spinner, Check, Calendar, Trash, ChevronDown } from "@/components/icons";
 import { MemberPicker } from "./MemberPicker";
 
 export type RequestRow = {
@@ -222,6 +222,33 @@ export function RequestsManager({
     }
   }
 
+  async function deleteRequest(row: RequestRow) {
+    const label = row.kind === "interview" ? "interview request" : "job application";
+    if (
+      !window.confirm(
+        `Delete this ${label} from ${row.memberName || row.memberEmail}? This can't be undone — the member will be notified it was removed.`,
+      )
+    )
+      return;
+    setBusy(row.id);
+    setFlash(null);
+    try {
+      const res = await fetch("/api/admin/requests", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: row.kind, id: row.id }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) throw new Error(json.error || "Delete failed.");
+      setFlash(`Request deleted — ${row.memberName || "the member"} was notified.`);
+      router.refresh();
+    } catch (err) {
+      setFlash(err instanceof Error ? err.message : "Delete failed.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   const chips: { key: Filter; label: string; n: number }[] = [
     { key: "all", label: "All", n: counts.total },
     { key: "interview", label: "Interviews", n: counts.interview },
@@ -287,7 +314,7 @@ export function RequestsManager({
 
       {/* Table */}
       <div className="overflow-x-auto rounded-2xl border border-steel-line">
-        <table className="w-full min-w-[860px] text-left text-sm">
+        <table className="w-full min-w-[980px] text-left text-sm">
           <thead className="bg-navy text-xs uppercase tracking-wider text-fog">
             <tr>
               <th className="px-4 py-3 font-semibold">When</th>
@@ -357,27 +384,42 @@ export function RequestsManager({
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex flex-col items-end gap-1.5">
-                    <select
-                      value={r.status}
-                      disabled={busy === r.id}
-                      onChange={(e) => setStatus(r, e.target.value)}
-                      className="rounded-lg border border-steel-line bg-void px-2.5 py-1.5 text-xs capitalize text-chrome outline-none focus:border-blue-500 disabled:opacity-50"
-                    >
-                      {statusesFor(r.kind).map((s) => (
-                        <option key={s} value={s} className="capitalize">
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                    {r.kind === "interview" && (
+                  <div className="flex flex-nowrap items-center justify-end gap-1.5">
+                    <div className="relative">
+                      <select
+                        value={r.status}
+                        disabled={busy === r.id}
+                        onChange={(e) => setStatus(r, e.target.value)}
+                        className="appearance-none rounded-lg border border-steel-line bg-void py-1.5 pl-3 pr-8 text-xs font-medium capitalize text-chrome outline-none transition-colors hover:border-blue-500/50 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                      >
+                        {statusesFor(r.kind).map((s) => (
+                          <option key={s} value={s} className="capitalize">
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-fog" />
+                    </div>
+                    {r.kind === "interview" && r.status === "scheduled" && (
                       <button
                         onClick={() => openSchedule(r)}
-                        className="rounded-lg border border-blue-500/40 px-2.5 py-1 text-xs font-medium text-blue-500 transition-colors hover:bg-blue-500/10"
+                        disabled={busy === r.id}
+                        title={r.scheduledAt ? "Reschedule interview" : "Schedule interview"}
+                        className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-blue-500/10 px-2.5 py-1.5 text-xs font-semibold text-blue-500 ring-1 ring-inset ring-blue-500/25 transition-colors hover:bg-blue-500/20 hover:ring-blue-500/40 disabled:opacity-50"
                       >
+                        <Calendar className="h-3.5 w-3.5 shrink-0" />
                         {r.scheduledAt ? "Reschedule" : "Schedule"}
                       </button>
                     )}
+                    <button
+                      onClick={() => deleteRequest(r)}
+                      disabled={busy === r.id}
+                      title="Delete request"
+                      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-semibold text-fog ring-1 ring-inset ring-steel-line transition-colors hover:bg-red-500/10 hover:text-red-600 hover:ring-red-400/40 disabled:opacity-50"
+                    >
+                      <Trash className="h-3.5 w-3.5 shrink-0" />
+                      Delete
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -397,8 +439,10 @@ export function RequestsManager({
         Changing a status notifies the member automatically. Use{" "}
         <span className="font-medium text-mist">Schedule an interview</span> to
         send a confirmed time to any member — even one who hasn&apos;t requested
-        one — or <span className="font-medium text-mist">Schedule</span> on a row
-        to set a time for an existing request.
+        one. For an existing request, set its status to{" "}
+        <span className="font-medium text-mist">Scheduled</span> and the{" "}
+        <span className="font-medium text-mist">Schedule</span> button appears to
+        set the time and link.
       </p>
 
       {creating && (

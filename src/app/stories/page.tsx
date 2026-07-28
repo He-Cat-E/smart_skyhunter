@@ -4,6 +4,7 @@ import Image from "next/image";
 import { STORIES as SEED_STORIES } from "@/lib/content";
 import { collectionGet } from "@/lib/cache";
 import { Reveal } from "@/components/Reveal";
+import { AuthSwitch } from "@/components/AuthSwitch";
 
 // Static HTML, refreshed at most every 10 min. Admin edits publish instantly
 // via revalidateTag("content"), which busts this route's cached data reads too.
@@ -95,15 +96,29 @@ export default async function StoriesPage() {
           Your story isn&apos;t over — it&apos;s mid-sentence.
         </h2>
         <p className="mx-auto mt-3 max-w-md text-mist">
-          Sign up now, and when you land your next thing, come back and tell us.
-          Someone in week one needs to hear it.
+          <AuthSwitch
+            guest="Sign up now, and when you land your next thing, come back and tell us. Someone in week one needs to hear it."
+            authed="When you land your next thing, come back and tell us — someone in week one needs to hear it."
+          />
         </p>
-        <Link
-          href="/signup"
-          className="mt-6 inline-block rounded-lg bg-blue-500 px-7 py-3.5 font-semibold text-white transition-colors hover:bg-blue-400"
-        >
-          Sign up for early access
-        </Link>
+        <AuthSwitch
+          guest={
+            <Link
+              href="/signup"
+              className="mt-6 inline-block rounded-lg bg-blue-500 px-7 py-3.5 font-semibold text-white transition-colors hover:bg-blue-400"
+            >
+              Sign up for early access
+            </Link>
+          }
+          authed={
+            <Link
+              href="/jobs"
+              className="mt-6 inline-block rounded-lg bg-blue-500 px-7 py-3.5 font-semibold text-white transition-colors hover:bg-blue-400"
+            >
+              Browse jobs
+            </Link>
+          }
+        />
       </div>
     </section>
   );

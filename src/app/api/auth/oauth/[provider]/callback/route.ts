@@ -14,6 +14,7 @@ import {
   authHintCookie,
   isSuspended,
 } from "@/lib/auth";
+import { lookupSignupMeta } from "@/lib/geo";
 import { recordSignup } from "@/lib/sheet";
 import { notifyUser, notifyAdmins } from "@/lib/notify";
 
@@ -104,6 +105,7 @@ export async function GET(
           situation: "",
           location: "",
           connections: [provider],
+          signup: await lookupSignupMeta(req.headers),
         },
       };
       await createUser(user);

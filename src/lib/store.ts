@@ -3,6 +3,7 @@ import path from "path";
 import crypto from "crypto";
 import { getSupabase, noteSupabaseDown } from "./supabase";
 import { JOBS as JOB_SEED, type Job } from "./jobs";
+import type { SignupMeta } from "./geo";
 
 /*
   Storage adapter. Every data access goes through here. When Supabase is
@@ -44,6 +45,8 @@ export type StoredUser = {
     suspended?: boolean;
     suspendedAt?: string; // ISO timestamp
     suspendedReason?: string; // optional admin note
+    // IP geolocation + VPN/VPS detection captured at signup (admin-only).
+    signup?: SignupMeta;
   };
 };
 
@@ -808,6 +811,29 @@ export async function applicationUpdateStatus(
   );
 }
 
+// Delete an application by id, returning the removed row (so the admin API can
+// notify the member whose request was deleted).
+export async function applicationDelete(id: string): Promise<Application | null> {
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("applications")
+        .delete()
+        .eq("id", id)
+        .select("*")
+        .maybeSingle();
+      if (error) throw error;
+      return data ? rowToApp(data) : null;
+    },
+    async () => {
+      const list = await readJson<Application[]>("applications.json", []);
+      const removed = list.find((a) => a.id === id) ?? null;
+      if (removed) await writeJson("applications.json", list.filter((a) => a.id !== id));
+      return removed;
+    },
+  );
+}
+
 // ---- intro requests (contracts network) ----------------------------------
 
 export type IntroRequest = {
@@ -947,6 +973,29 @@ export async function introUpdateStatus(
         }
       await writeJson("intros.json", list);
       return updated;
+    },
+  );
+}
+
+// Delete an interview/intro request by id, returning the removed row (so the
+// admin API can notify the member whose request was deleted).
+export async function introDelete(id: string): Promise<IntroRequest | null> {
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("intro_requests")
+        .delete()
+        .eq("id", id)
+        .select("*")
+        .maybeSingle();
+      if (error) throw error;
+      return data ? rowToIntro(data) : null;
+    },
+    async () => {
+      const list = await readJson<IntroRequest[]>("intros.json", []);
+      const removed = list.find((it) => it.id === id) ?? null;
+      if (removed) await writeJson("intros.json", list.filter((it) => it.id !== id));
+      return removed;
     },
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getSession, findUser, isAdminUser } from "@/lib/auth";
 import { applicationsByUser, introsByUser, notifyUnread } from "@/lib/store";
@@ -244,11 +245,21 @@ export default async function DashboardPage() {
           {partners.map((p) => (
             <div key={p.name} className="flex h-full flex-col bg-navy p-5">
               <div className="flex items-center gap-3">
-                <span
-                  className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-white ${accentDot[p.accent] ?? "bg-blue-500"}`}
-                >
-                  {p.initials}
-                </span>
+                {p.photo ? (
+                  <Image
+                    src={p.photo}
+                    alt={p.name}
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${accentDot[p.accent] ?? "bg-blue-500"}`}
+                  >
+                    {p.initials}
+                  </span>
+                )}
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-chrome">{p.name}</p>
                   <p className="truncate text-xs text-blue-300">{p.role}</p>
