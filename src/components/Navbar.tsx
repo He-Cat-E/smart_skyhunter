@@ -6,10 +6,10 @@ import { NotificationBell } from "./NotificationBell";
 import { LarkBar } from "./LarkBar";
 
 const LINKS = [
+  { href: "/", label: "Home" },
   { href: "/community", label: "Community" },
   { href: "/jobs", label: "Jobs" },
   { href: "/reskill", label: "Reskill" },
-  { href: "/stories", label: "Stories" },
   { href: "/support", label: "Support" },
 ];
 

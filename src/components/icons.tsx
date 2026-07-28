@@ -163,6 +163,26 @@ export function Trash({ className = "" }: { className?: string }) {
   );
 }
 
+export function Laptop({ className = "" }: { className?: string }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <rect x="4" y="5" width="16" height="10" rx="1.5" />
+      <path d="M2.5 18.5h19" />
+    </svg>
+  );
+}
+
+// Coin with a dollar mark — income / earnings.
+export function Coin({ className = "" }: { className?: string }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v10" />
+      <path d="M14.6 9.3c-.6-.8-1.6-1.2-2.6-1.2-1.5 0-2.7.8-2.7 1.9 0 1.3 1.2 1.7 2.7 2 1.6.3 2.8.8 2.8 2.1 0 1.1-1.2 2-2.8 2-1.1 0-2.1-.4-2.7-1.2" />
+    </svg>
+  );
+}
+
 // Telegram paper-plane (filled) — use on a colored badge with white text.
 export function Telegram({ className = "" }: { className?: string }) {
   return (

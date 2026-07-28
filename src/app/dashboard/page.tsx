@@ -102,6 +102,11 @@ export default async function DashboardPage() {
 
   const first = user.name.split(" ")[0];
 
+  // Partners this member has already requested an interview with (one per partner).
+  const requestedPartners = new Set(
+    interviews.map((i) => i.partner.trim().toLowerCase()),
+  );
+
   // Profile completion (same items as the profile page).
   const p = user.profile;
   const items = [
@@ -275,7 +280,11 @@ export default async function DashboardPage() {
                     Manage interview requests in the admin panel.
                   </span>
                 ) : (
-                  <IntroButton partner={p.name} role={p.role} />
+                  <IntroButton
+                    partner={p.name}
+                    role={p.role}
+                    requested={requestedPartners.has(p.name.trim().toLowerCase())}
+                  />
                 )}
               </div>
             </div>

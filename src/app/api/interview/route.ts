@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, isAdminUser } from "@/lib/auth";
-import { introAdd } from "@/lib/store";
+import { introAdd, introsByUser } from "@/lib/store";
 import { notifyUser, notifyAdmins } from "@/lib/notify";
 
 export const runtime = "nodejs";
@@ -51,6 +51,24 @@ export async function POST(req: Request) {
       { ok: false, error: "Please tell us a little about what you're looking for." },
       { status: 400 },
     );
+  }
+
+  // One interview request per partner: a member can't request the same support
+  // team member / partner twice.
+  if (partner) {
+    const existing = await introsByUser(session.email);
+    const dup = existing.find(
+      (i) => i.partner.trim().toLowerCase() === partner.toLowerCase(),
+    );
+    if (dup) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `You've already requested an interview with ${partner}. Check "Your requests" for its status.`,
+        },
+        { status: 409 },
+      );
+    }
   }
 
   const schedule = `Preferred: ${preferredDate} · ${timeSlot}${timezone ? ` (${timezone})` : ""}`;

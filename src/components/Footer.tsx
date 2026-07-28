@@ -35,11 +35,6 @@ export function Footer() {
                   Reskill for free
                 </Link>
               </li>
-              <li>
-                <Link href="/stories" className="hover:text-blue-300">
-                  Read a story
-                </Link>
-              </li>
             </ul>
           </div>
 

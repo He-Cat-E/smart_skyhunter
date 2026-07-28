@@ -114,6 +114,13 @@ export function AuthNav({ compact = false }: { compact?: boolean }) {
                 Your requests
               </Link>
               <Link
+                href="/messages"
+                onClick={() => setMenuOpen(false)}
+                className="block rounded-lg px-3 py-2 text-sm text-mist transition-colors hover:bg-abyss hover:text-chrome"
+              >
+                Messages
+              </Link>
+              <Link
                 href="/community"
                 onClick={() => setMenuOpen(false)}
                 className="block rounded-lg px-3 py-2 text-sm text-mist transition-colors hover:bg-abyss hover:text-chrome"

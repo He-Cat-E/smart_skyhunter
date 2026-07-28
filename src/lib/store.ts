@@ -97,6 +97,17 @@ function isRecoverableError(err: any): boolean {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const isJwtSkew = (err: any) => /^PGRST3\d\d$/i.test(String(err?.code ?? ""));
 
+// A table that hasn't been created in Supabase yet (schema not applied).
+// PGRST205 = PostgREST "table not in schema cache"; 42P01 = Postgres "undefined
+// table". We serve this data from the local store instead of 500-ing, and we do
+// NOT trip the breaker (the rest of the tables are fine) — so once the table is
+// created it starts using Supabase automatically.
+let missingTableWarned = false;
+const isMissingTable = (err: any) => {
+  const code = String(err?.code ?? "");
+  return code === "PGRST205" || code === "42P01";
+};
+
 // Run a Supabase op; on a network failure, open the breaker and use the local
 // fallback instead of throwing. Real query errors (bad SQL, etc.) still throw.
 //
@@ -118,6 +129,17 @@ async function store<T>(
       if (isJwtSkew(err) && attempt < 3) {
         await sleep(200 * (attempt + 1)); // 200ms, 400ms, 600ms
         continue;
+      }
+      if (isMissingTable(err)) {
+        if (!missingTableWarned) {
+          missingTableWarned = true;
+          console.warn(
+            `[store] a Supabase table is missing (${(err as { code?: string })?.code}) — ` +
+              "serving that data from the local store. Apply supabase/schema.sql " +
+              "(SQL editor) to enable Supabase persistence for it.",
+          );
+        }
+        return fileFn();
       }
       if (isRecoverableError(err)) {
         if (isJwtSkew(err)) {
@@ -1121,6 +1143,229 @@ export async function introCreateScheduled(
       };
       list.push(row);
       await writeJson("intros.json", list);
+      return row;
+    },
+  );
+}
+
+// ---- chat: conversations + messages --------------------------------------
+// Two kinds:
+//   "support"  — a member with the SkyHunter support/admin team.
+//   "contract" — two members the support team matched for a contract.
+// Real-time is achieved by the thread polling messagesList() every few seconds.
+
+export type Conversation = {
+  id: string;
+  kind: "support" | "contract";
+  participants: string[]; // lowercased member emails
+  title: string; // context label, e.g. "Support" or "Contract · <role>"
+  createdAt: string;
+  lastMessageAt: string;
+  lastMessage: string; // short preview
+};
+
+export type ChatMessage = {
+  id: string;
+  conversationId: string;
+  senderEmail: string;
+  senderName: string;
+  body: string;
+  createdAt: string;
+};
+
+function rowToConversation(r: any): Conversation {
+  return {
+    id: String(r.id),
+    kind: r.kind === "contract" ? "contract" : "support",
+    participants: Array.isArray(r.participants) ? r.participants : [],
+    title: r.title ?? "",
+    createdAt: r.created_at,
+    lastMessageAt: r.last_message_at ?? r.created_at,
+    lastMessage: r.last_message ?? "",
+  };
+}
+
+function rowToMessage(r: any): ChatMessage {
+  return {
+    id: String(r.id),
+    conversationId: String(r.conversation_id),
+    senderEmail: r.sender_email,
+    senderName: r.sender_name ?? "",
+    body: r.body ?? "",
+    createdAt: r.created_at,
+  };
+}
+
+export async function conversationCreate(
+  kind: "support" | "contract",
+  participants: string[],
+  title: string,
+): Promise<Conversation> {
+  const parts = Array.from(new Set(participants.map(lc)));
+  const now = new Date().toISOString();
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("conversations")
+        .insert({
+          kind,
+          participants: parts,
+          title,
+          last_message_at: now,
+          last_message: "",
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      return rowToConversation(data);
+    },
+    async () => {
+      const list = await readJson<Conversation[]>("conversations.json", []);
+      const row: Conversation = {
+        id: crypto.randomUUID(),
+        kind,
+        participants: parts,
+        title,
+        createdAt: now,
+        lastMessageAt: now,
+        lastMessage: "",
+      };
+      list.push(row);
+      await writeJson("conversations.json", list);
+      return row;
+    },
+  );
+}
+
+export async function conversationGet(id: string): Promise<Conversation | null> {
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("conversations")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? rowToConversation(data) : null;
+    },
+    async () => {
+      const list = await readJson<Conversation[]>("conversations.json", []);
+      return list.find((c) => c.id === id) ?? null;
+    },
+  );
+}
+
+export async function conversationsForUser(email: string): Promise<Conversation[]> {
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("conversations")
+        .select("*")
+        .contains("participants", [lc(email)])
+        .order("last_message_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map(rowToConversation);
+    },
+    async () => {
+      const list = await readJson<Conversation[]>("conversations.json", []);
+      return list
+        .filter((c) => c.participants.includes(lc(email)))
+        .sort((a, b) => (a.lastMessageAt < b.lastMessageAt ? 1 : -1));
+    },
+  );
+}
+
+export async function conversationsAll(): Promise<Conversation[]> {
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("conversations")
+        .select("*")
+        .order("last_message_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map(rowToConversation);
+    },
+    async () => {
+      const list = await readJson<Conversation[]>("conversations.json", []);
+      return [...list].sort((a, b) => (a.lastMessageAt < b.lastMessageAt ? 1 : -1));
+    },
+  );
+}
+
+// Existing open support conversation for a member (avoid duplicates).
+export async function supportConversationFor(
+  email: string,
+): Promise<Conversation | null> {
+  const mine = await conversationsForUser(email);
+  return mine.find((c) => c.kind === "support") ?? null;
+}
+
+export async function messagesList(conversationId: string): Promise<ChatMessage[]> {
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map(rowToMessage);
+    },
+    async () => {
+      const list = await readJson<ChatMessage[]>("messages.json", []);
+      return list
+        .filter((m) => m.conversationId === conversationId)
+        .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+    },
+  );
+}
+
+export async function messageAdd(
+  conversationId: string,
+  senderEmail: string,
+  senderName: string,
+  body: string,
+): Promise<ChatMessage> {
+  const now = new Date().toISOString();
+  const preview = body.slice(0, 120);
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("messages")
+        .insert({
+          conversation_id: conversationId,
+          sender_email: lc(senderEmail),
+          sender_name: senderName,
+          body,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      await sb
+        .from("conversations")
+        .update({ last_message_at: now, last_message: preview })
+        .eq("id", conversationId);
+      return rowToMessage(data);
+    },
+    async () => {
+      const list = await readJson<ChatMessage[]>("messages.json", []);
+      const row: ChatMessage = {
+        id: crypto.randomUUID(),
+        conversationId,
+        senderEmail: lc(senderEmail),
+        senderName,
+        body,
+        createdAt: now,
+      };
+      list.push(row);
+      await writeJson("messages.json", list);
+      const convs = await readJson<Conversation[]>("conversations.json", []);
+      for (const c of convs)
+        if (c.id === conversationId) {
+          c.lastMessageAt = now;
+          c.lastMessage = preview;
+        }
+      await writeJson("conversations.json", convs);
       return row;
     },
   );

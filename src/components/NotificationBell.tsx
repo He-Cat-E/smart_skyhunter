@@ -12,6 +12,8 @@ import { Bell } from "./icons";
 function linkFor(type: string): string | null {
   const m = /^request:(interview|application):(.+)$/.exec(type);
   if (m) return `/requests/${m[1]}/${m[2]}`;
+  const chat = /^message:(.+)$/.exec(type);
+  if (chat) return `/messages/${chat[1]}`;
   if (["request-update", "intro", "interview", "application", "apply"].includes(type)) {
     return "/requests";
   }

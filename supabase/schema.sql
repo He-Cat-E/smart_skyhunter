@@ -98,6 +98,31 @@ alter table public.intro_requests add column if not exists scheduled_at  timesta
 alter table public.intro_requests add column if not exists meeting_link  text not null default '';
 alter table public.intro_requests add column if not exists schedule_note text not null default '';
 
+-- Real-time chat: conversations (support: member↔admins; contract: member↔member)
+-- and their messages. Access is enforced in the app (service-role key).
+create table if not exists public.conversations (
+  id              uuid primary key default gen_random_uuid(),
+  kind            text not null default 'support',
+  participants    text[] not null default '{}',
+  title           text not null default '',
+  last_message    text not null default '',
+  last_message_at timestamptz not null default now(),
+  created_at      timestamptz not null default now()
+);
+create index if not exists conversations_participants_idx
+  on public.conversations using gin (participants);
+
+create table if not exists public.messages (
+  id              uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.conversations(id) on delete cascade,
+  sender_email    text not null,
+  sender_name     text not null default '',
+  body            text not null,
+  created_at      timestamptz not null default now()
+);
+create index if not exists messages_conversation_idx
+  on public.messages (conversation_id, created_at);
+
 alter table public.users           enable row level security;
 alter table public.pending_signups enable row level security;
 alter table public.registrations   enable row level security;
@@ -106,6 +131,8 @@ alter table public.content         enable row level security;
 alter table public.notifications   enable row level security;
 alter table public.applications    enable row level security;
 alter table public.intro_requests  enable row level security;
+alter table public.conversations   enable row level security;
+alter table public.messages        enable row level security;
 
 -- Tip: to make yourself an admin after signing up, either add your email to the
 -- ADMIN_EMAILS env var, or run:

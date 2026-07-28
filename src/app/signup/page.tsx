@@ -33,6 +33,18 @@ export default function SignUpPage() {
             you&apos;ve been, and we&apos;ll help you find where you&apos;re going.
           </p>
 
+          {/* Value signal — what members typically earn */}
+          <div className="mt-7 inline-flex max-w-md items-center gap-4 rounded-2xl border border-blue-500/30 bg-blue-500/5 px-5 py-4">
+            <span className="h-10 w-1 shrink-0 rounded-full bg-blue-500" />
+            <p className="text-sm text-mist">
+              Members typically earn{" "}
+              <span className="font-display text-lg font-semibold sky-text">
+                $2.5K–$3.5K/mo
+              </span>{" "}
+              from contracts with our developer &amp; startup-manager network.
+            </p>
+          </div>
+
           <ul className="mt-8 space-y-3.5">
             {PERKS.map((p) => (
               <li key={p} className="flex items-start gap-3 text-mist">
@@ -43,6 +55,19 @@ export default function SignUpPage() {
               </li>
             ))}
           </ul>
+
+          {/* Low-friction trust cues */}
+          <div className="mt-8 flex flex-wrap gap-2">
+            {["Takes ~1 minute", "Always free", "No spam, ever"].map((b) => (
+              <span
+                key={b}
+                className="inline-flex items-center gap-1.5 rounded-full border border-steel-line bg-void/60 px-3 py-1.5 text-xs font-medium text-mist"
+              >
+                <Check className="h-3 w-3 text-cyan" />
+                {b}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div className="lift rounded-2xl border border-steel-line bg-void p-6 sm:p-8">

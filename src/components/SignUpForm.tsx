@@ -11,6 +11,52 @@ import { OAuthButtons } from "./OAuthButtons";
 import { useAuth } from "./AuthProvider";
 import { isStrongPassword } from "@/lib/password";
 import { IS_DEV } from "@/lib/flags";
+import { Spinner, Check } from "@/components/icons";
+
+// Two-segment progress bar for the signup → verify flow.
+function StepBar({ step }: { step: 1 | 2 }) {
+  return (
+    <div
+      className="flex items-center gap-1.5"
+      role="img"
+      aria-label={`Step ${step} of 2`}
+    >
+      <span className="h-1.5 w-7 rounded-full bg-blue-500" />
+      <span
+        className={`h-1.5 w-7 rounded-full ${step >= 2 ? "bg-blue-500" : "bg-steel-line"}`}
+      />
+    </div>
+  );
+}
+
+// Labeled group with a hairline, so the long form reads as digestible sections.
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 pt-1">
+        <span className="text-xs font-semibold uppercase tracking-wider text-fog">
+          {title}
+        </span>
+        <span className="h-px flex-1 bg-steel-line" />
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <p
+      role="alert"
+      className="flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+    >
+      <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-500 text-[0.65rem] font-bold text-white">
+        !
+      </span>
+      <span>{message}</span>
+    </p>
+  );
+}
 
 const SITUATIONS = [
   "My role was eliminated by AI/automation",
@@ -125,8 +171,7 @@ export function SignUpForm() {
   }
 
   // Step 2 — verify the 6-digit code, which creates the account.
-  async function handleVerify(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function runVerify(theCode: string) {
     setStatus("submitting");
     setMessage("");
 
@@ -134,7 +179,7 @@ export function SignUpForm() {
       const res = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: pendingEmail, code }),
+        body: JSON.stringify({ email: pendingEmail, code: theCode }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
@@ -149,6 +194,11 @@ export function SignUpForm() {
         err instanceof Error ? err.message : "We couldn't verify that code.",
       );
     }
+  }
+
+  function handleVerify(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    runVerify(code);
   }
 
   async function handleResend() {
@@ -178,7 +228,13 @@ export function SignUpForm() {
     return (
       <form onSubmit={handleVerify} className="space-y-5">
         <div>
-          <h2 className="font-display text-2xl font-semibold tracking-tight text-chrome">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs font-semibold uppercase tracking-wider text-fog">
+              Step 2 of 2
+            </span>
+            <StepBar step={2} />
+          </div>
+          <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-chrome">
             Check your email
           </h2>
           <p className="mt-1 text-sm text-fog">
@@ -206,25 +262,36 @@ export function SignUpForm() {
             autoComplete="one-time-code"
             maxLength={6}
             required
+            autoFocus
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            placeholder="000000"
+            onChange={(e) => {
+              const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+              setCode(v);
+              if (status === "error") setStatus("idle");
+              // Auto-submit the moment all six digits are in (incl. paste).
+              if (v.length === 6 && status !== "submitting") runVerify(v);
+            }}
+            placeholder="••••••"
             className={`${inputClass} text-center text-2xl font-semibold tracking-[0.5em]`}
           />
+          <p className="mt-1.5 text-xs text-faint">
+            Can&apos;t find it? Check your spam folder.
+          </p>
         </div>
 
-        {notice && <p className="text-sm text-cyan">{notice}</p>}
-        {status === "error" && (
-          <p className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {message}
+        {notice && (
+          <p className="flex items-center gap-1.5 text-sm text-cyan">
+            <Check className="h-4 w-4" /> {notice}
           </p>
         )}
+        {status === "error" && <ErrorBanner message={message} />}
 
         <button
           type="submit"
           disabled={status === "submitting" || code.length !== 6}
-          className="w-full rounded-xl bg-blue-500 px-6 py-3.5 font-semibold text-white transition-colors hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 px-6 py-3.5 font-semibold text-white transition-colors hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
         >
+          {status === "submitting" && <Spinner className="h-4 w-4" />}
           {status === "submitting" ? "Verifying…" : "Verify & create account"}
         </button>
 
@@ -243,9 +310,9 @@ export function SignUpForm() {
               setStatus("idle");
               setMessage("");
             }}
-            className="text-fog hover:text-chrome"
+            className="text-fog transition-colors hover:text-chrome"
           >
-            Use a different email
+            ← Use a different email
           </button>
         </div>
       </form>
@@ -254,9 +321,15 @@ export function SignUpForm() {
 
   // ---- Step 1: details -------------------------------------------------
   return (
-    <form onSubmit={handleDetails} className="space-y-4">
+    <form onSubmit={handleDetails} className="space-y-5">
       <div>
-        <h2 className="font-display text-2xl font-semibold tracking-tight text-chrome">
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs font-semibold uppercase tracking-wider text-fog">
+            Step 1 of 2
+          </span>
+          <StepBar step={1} />
+        </div>
+        <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-chrome">
           Create your account
         </h2>
         <p className="mt-1 text-sm text-fog">
@@ -269,73 +342,90 @@ export function SignUpForm() {
 
       <OAuthButtons action="Sign up" />
 
-      <div>
-        <label htmlFor="name" className={labelClass}>
-          Full name
-        </label>
-        <input id="name" name="name" required autoComplete="name" className={inputClass} />
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="name" className={labelClass}>
+            Full name
+          </label>
+          <input
+            id="name"
+            name="name"
+            required
+            autoComplete="name"
+            placeholder="Your name"
+            className={inputClass}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="email" className={labelClass}>
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="you@email.com"
+            defaultValue={params.get("email") ?? ""}
+            className={inputClass}
+          />
+        </div>
+
+        <PasswordField />
       </div>
 
-      <div>
-        <label htmlFor="email" className={labelClass}>
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          defaultValue={params.get("email") ?? ""}
-          className={inputClass}
-        />
-      </div>
+      <Section title="About you">
+        <div>
+          <label htmlFor="previousRole" className={labelClass}>
+            What was your most recent role?
+          </label>
+          <input
+            id="previousRole"
+            name="previousRole"
+            placeholder="e.g. Copywriter, Bookkeeper, Support Lead"
+            className={inputClass}
+          />
+        </div>
 
-      <PasswordField />
+        <div>
+          <span className={labelClass}>Industry</span>
+          <Select name="industry" options={INDUSTRIES} required />
+        </div>
 
-      <div>
-        <label htmlFor="previousRole" className={labelClass}>
-          What was your most recent role?
-        </label>
-        <input
-          id="previousRole"
-          name="previousRole"
-          placeholder="e.g. Copywriter, Bookkeeper, Support Lead"
-          className={inputClass}
-        />
-      </div>
+        <div>
+          <span className={labelClass}>What brings you here?</span>
+          <Select name="situation" options={SITUATIONS} required />
+        </div>
+      </Section>
 
-      <div>
-        <span className={labelClass}>Industry</span>
-        <Select name="industry" options={INDUSTRIES} required />
-      </div>
-
-      <div>
-        <span className={labelClass}>What brings you here?</span>
-        <Select name="situation" options={SITUATIONS} required />
-      </div>
-
-      <LocationPicker />
+      <Section title="Where you're based">
+        <LocationPicker />
+      </Section>
 
       <HumanCheck />
 
-      {status === "error" && (
-        <p className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {message}
-        </p>
-      )}
+      {status === "error" && <ErrorBanner message={message} />}
 
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="w-full rounded-xl bg-blue-500 px-6 py-3.5 font-semibold text-white transition-colors hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 px-6 py-3.5 font-semibold text-white transition-colors hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "submitting" ? "Sending your code…" : "Sign Up"}
+        {status === "submitting" && <Spinner className="h-4 w-4" />}
+        {status === "submitting"
+          ? "Sending your code…"
+          : IS_DEV
+            ? "Create account"
+            : "Continue"}
       </button>
 
-      <p className="text-center text-xs text-fog">
-        By signing up you agree to hear from SkyHunter about launch.
-        {!IS_DEV && " We'll email you a 6-digit code to confirm your address."}
+      <p className="flex items-center justify-center gap-1.5 text-center text-xs text-fog">
+        <Check className="h-3.5 w-3.5 text-cyan" />
+        {IS_DEV
+          ? "Free forever for job seekers. No spam."
+          : "Free forever for job seekers. We'll email a 6-digit code to confirm."}
       </p>
     </form>
   );

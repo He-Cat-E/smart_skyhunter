@@ -12,7 +12,6 @@ import {
   INCOME_PATHS,
   INCOME_INTRO,
 } from "@/lib/community";
-import { STORIES as SEED_STORIES } from "@/lib/content";
 import { collectionGet } from "@/lib/cache";
 import { Reveal } from "@/components/Reveal";
 import { Wordmark } from "@/components/Wordmark";
@@ -29,7 +28,12 @@ import {
   Briefcase,
   Book,
   Lifebuoy,
+  Laptop,
+  Coin,
 } from "@/components/icons";
+
+// Icon per "Who it's for" persona (by position): remote, learning, income, hiring.
+const PERSONA_ICONS = [Laptop, Book, Coin, Briefcase];
 
 export const metadata: Metadata = {
   title: "Community · SkyHunter",
@@ -46,11 +50,6 @@ const ICONS: Record<string, (p: { className?: string }) => React.ReactElement> =
   lifebuoy: Lifebuoy,
 };
 
-const accentDot: Record<string, string> = {
-  clay: "bg-blue-500",
-  sage: "bg-cyan",
-  sky: "bg-blue-400",
-};
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -70,7 +69,6 @@ export default async function CommunityPage() {
     PRINCIPLES,
     OFFERINGS,
     JOIN_STEPS,
-    STORIES,
   ] = await Promise.all([
     collectionGet("personas", SEED_PERSONAS),
     collectionGet("members", SEED_MEMBERS),
@@ -79,7 +77,6 @@ export default async function CommunityPage() {
     collectionGet("principles", SEED_PRINCIPLES),
     collectionGet("offerings", SEED_OFFERINGS),
     collectionGet("join_steps", SEED_JOIN),
-    collectionGet("stories", SEED_STORIES),
   ]);
 
   return (
@@ -309,19 +306,24 @@ export default async function CommunityPage() {
         </Reveal>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {PERSONAS.map((p, i) => (
-            <Reveal key={p.title} delay={i * 80}>
-              <div className="h-full rounded-2xl border border-steel-line/70 bg-navy/60 p-6">
-                <span className="font-display text-sm font-semibold text-blue-300">
-                  0{i + 1}
-                </span>
-                <h3 className="mt-3 font-display text-lg font-semibold text-chrome">
-                  {p.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-mist">{p.body}</p>
-              </div>
-            </Reveal>
-          ))}
+          {PERSONAS.map((p, i) => {
+            const Icon = PERSONA_ICONS[i] ?? Users;
+            return (
+              <Reveal key={p.title} delay={i * 80}>
+                <div className="h-full rounded-2xl border border-steel-line/70 bg-navy/60 p-6">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 ring-1 ring-blue-500/20">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-4 font-display text-lg font-semibold text-chrome">
+                    {p.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-mist">
+                    {p.body}
+                  </p>
+                </div>
+              </Reveal>
+            );
+          })}
         </div>
       </section>
 
@@ -381,53 +383,6 @@ export default async function CommunityPage() {
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* 7. Testimonials / social proof */}
-      <section className="mx-auto max-w-[1400px] px-5 py-20">
-        <Reveal>
-          <div className="max-w-2xl">
-            <Eyebrow>Member stories</Eyebrow>
-            <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-chrome">
-              People who were exactly here
-            </h2>
-          </div>
-        </Reveal>
-
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {STORIES.map((story, i) => (
-            <Reveal key={story.name} delay={i * 80}>
-              <figure className="flex h-full flex-col rounded-2xl border border-steel-line/70 bg-navy/60 p-6">
-                <blockquote className="flex-1 text-[0.95rem] leading-relaxed text-mist">
-                  &ldquo;{story.quote}&rdquo;
-                </blockquote>
-                <figcaption className="mt-5 flex items-center gap-3 border-t border-steel-line/70 pt-4">
-                  {story.avatar ? (
-                    <Image
-                      src={story.avatar}
-                      alt={story.name}
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span
-                      className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white ${accentDot[story.accent]}`}
-                    >
-                      {story.initials}
-                    </span>
-                  )}
-                  <div>
-                    <p className="text-sm font-semibold text-chrome">
-                      {story.name}
-                    </p>
-                    <p className="text-xs text-fog">{story.now}</p>
-                  </div>
-                </figcaption>
-              </figure>
-            </Reveal>
-          ))}
         </div>
       </section>
 
