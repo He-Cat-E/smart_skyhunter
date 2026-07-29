@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 
 const DASHBOARD = { href: "/dashboard", label: "Dashboard" };
-const MESSAGES = { href: "/messages", label: "Messages" };
 
 // Renders the top-bar links and highlights the one for the current page.
 // Signed-in members also get a "Dashboard" link prepended. Because the Navbar
@@ -31,7 +30,7 @@ export function NavLinks({
   // Until /me resolves, trust the hint; afterwards, trust the real user (so a
   // sign-out correctly drops the link even if the cookie lingers a moment).
   const signedIn = loading ? hint : !!user;
-  const all = signedIn ? [DASHBOARD, MESSAGES, ...links] : links;
+  const all = signedIn ? [DASHBOARD, ...links] : links;
 
   return (
     <>

@@ -21,14 +21,20 @@ const SESSION_SECONDS = 60 * 60 * 24; // 1 day (no remember → session cookie)
 
 function secret(): string {
   const s = process.env.AUTH_SECRET;
-  if (!s) {
-    console.warn(
-      "[auth] AUTH_SECRET is not set — using an insecure dev fallback. " +
-        "Set AUTH_SECRET in .env.local before deploying.",
+  if (s) return s;
+  // Fail closed in production: a known fallback secret would let anyone forge a
+  // session cookie for any email (including an admin) and take over the site.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "[auth] AUTH_SECRET is required in production. Set it to a 64-char random " +
+        "hex string (node -e \"console.log(crypto.randomBytes(32).toString('hex'))\").",
     );
-    return "dev-insecure-secret-do-not-use-in-production";
   }
-  return s;
+  console.warn(
+    "[auth] AUTH_SECRET is not set — using an insecure dev fallback. " +
+      "Set AUTH_SECRET in .env.local before deploying.",
+  );
+  return "dev-insecure-secret-do-not-use-in-production";
 }
 
 export type { StoredUser };
@@ -73,11 +79,15 @@ export function isSuspended(user: StoredUser): boolean {
   return !!user.profile?.suspended;
 }
 
-// Full user for the current session, or null.
+// Full user for the current session, or null. Suspended accounts resolve to
+// null so a stateless session (which has no server-side revocation) can't keep
+// acting after an admin disables it — enforced on every authenticated read.
 export async function getCurrentUser(): Promise<StoredUser | null> {
   const session = await getSession();
   if (!session) return null;
-  return (await findUserRow(session.email)) ?? null;
+  const user = (await findUserRow(session.email)) ?? null;
+  if (user && isSuspended(user)) return null;
+  return user;
 }
 
 // Current user if they're an admin, otherwise null.

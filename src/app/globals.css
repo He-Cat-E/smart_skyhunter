@@ -133,3 +133,83 @@ body {
     scroll-behavior: auto;
   }
 }
+
+/* ==========================================================================
+   Dark theme
+   The whole design system is token-based, so redefining the color tokens
+   under [data-theme="dark"] flips every utility (bg-navy, text-chrome, …) at
+   once. A tiny inline script in the layout sets data-theme before first paint
+   to avoid a flash; the navbar toggle switches + persists the choice.
+   ========================================================================== */
+:root[data-theme="dark"] {
+  /* surfaces */
+  --color-void: #14181f;        /* cards + inputs */
+  --color-abyss: rgba(18, 24, 34, 0.6); /* glass band (navbar, chat header) */
+  --color-navy: #171b23;        /* cards */
+  --color-navy-soft: #1f2531;   /* hover */
+  --color-steel: #232a36;       /* chips */
+  --color-steel-line: #2f3846;  /* borders */
+
+  /* text */
+  --color-chrome: #f1f4f9;      /* headings / strong */
+  --color-mist: #c5ccd6;        /* body */
+  --color-fog: #8b93a1;         /* muted */
+  --color-faint: #656d7b;       /* faint */
+
+  /* violet brand accent — lightened so it reads on dark surfaces */
+  --color-blue-300: #c4b5fd;    /* accent text, eyebrows, links */
+  --color-blue-400: #b661f5;    /* hover */
+  --color-blue-500: #a855f7;    /* primary button */
+  --color-blue-600: #9333ea;    /* darker */
+  --color-cyan: #2dd4bf;        /* secondary accent (teal) */
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(
+      1200px 620px at 72% -12%,
+      rgba(120, 90, 200, 0.18),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #0b0f17 0%, #0e1420 45%, #111827 100%);
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] ::selection {
+  background: rgba(168, 85, 247, 0.32);
+}
+
+:root[data-theme="dark"] .bg-sky-art {
+  background:
+    radial-gradient(120% 90% at 50% -25%, rgba(120, 90, 200, 0.12), transparent 60%),
+    radial-gradient(90% 70% at 50% -30%, rgba(168, 85, 247, 0.1), transparent 60%);
+}
+
+/* Wordmark "Hunter" — flip its near-black gradient to light on dark. */
+:root[data-theme="dark"] .chrome-text {
+  background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+:root[data-theme="dark"] .lift {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 16px 38px -18px rgba(0, 0, 0, 0.75);
+}
+
+/* Chat history wallpaper — a class so it can adapt to the theme (was inline). */
+.chat-wallpaper {
+  background-color: #eaf2fb;
+  background-image:
+    radial-gradient(1000px 500px at 50% -10%, rgba(135, 16, 216, 0.06), transparent 60%),
+    radial-gradient(rgba(90, 130, 175, 0.14) 1px, transparent 1.4px);
+  background-size: auto, 22px 22px;
+}
+:root[data-theme="dark"] .chat-wallpaper {
+  background-color: #0d1119;
+  background-image:
+    radial-gradient(1000px 500px at 50% -10%, rgba(168, 85, 247, 0.1), transparent 60%),
+    radial-gradient(rgba(120, 140, 180, 0.1) 1px, transparent 1.4px);
+}

@@ -108,7 +108,7 @@ export function SignUpForm() {
     const data = Object.fromEntries(new FormData(e.currentTarget).entries());
 
     // Bot check: honeypot must be empty and the human box must be verified.
-    if (String(data.company ?? "").trim()) {
+    if (String(data.hp_check ?? "").trim()) {
       setStatus("error");
       setMessage("Something went wrong. Please try again.");
       return;

@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Hide Next.js's on-screen dev indicator / dev-tools overlay (the "Preferences"
+  // panel). It's a dev-only Next.js UI, never shipped to production.
+  devIndicators: false,
   images: {
     // Serve AVIF first (smaller than WebP) with WebP fallback; cache the
     // optimized variants for a day so repeat visits skip re-encoding.

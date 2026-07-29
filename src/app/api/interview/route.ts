@@ -28,14 +28,14 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => null);
-  const partner = String(body?.partner ?? "").trim();
-  const role = String(body?.role ?? "").trim();
-  const email = String(body?.email ?? "").trim();
-  const phone = String(body?.phone ?? "").trim();
-  const preferredDate = String(body?.preferredDate ?? "").trim();
-  const timeSlot = String(body?.timeSlot ?? "").trim();
-  const timezone = String(body?.timezone ?? "").trim();
-  const goals = String(body?.message ?? "").trim();
+  const partner = String(body?.partner ?? "").trim().slice(0, 120);
+  const role = String(body?.role ?? "").trim().slice(0, 120);
+  const email = String(body?.email ?? "").trim().slice(0, 200);
+  const phone = String(body?.phone ?? "").trim().slice(0, 40);
+  const preferredDate = String(body?.preferredDate ?? "").trim().slice(0, 40);
+  const timeSlot = String(body?.timeSlot ?? "").trim().slice(0, 40);
+  const timezone = String(body?.timezone ?? "").trim().slice(0, 60);
+  const goals = String(body?.message ?? "").trim().slice(0, 2000);
 
   if (!isValidEmail(email)) {
     return NextResponse.json({ ok: false, error: "Please enter a valid email." }, { status: 400 });

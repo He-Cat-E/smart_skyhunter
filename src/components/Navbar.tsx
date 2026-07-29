@@ -3,6 +3,7 @@ import { Logo } from "./Logo";
 import { AuthNav } from "./AuthNav";
 import { NavLinks } from "./NavLinks";
 import { NotificationBell } from "./NotificationBell";
+import { ThemeToggle } from "./ThemeToggle";
 import { LarkBar } from "./LarkBar";
 
 const LINKS = [
@@ -30,6 +31,7 @@ export function Navbar() {
             <NavLinks links={LINKS} />
           </span>
           <span className="ml-3 flex items-center gap-2.5">
+            <ThemeToggle />
             <span data-tour="tour-notifications" className="flex">
               <NotificationBell />
             </span>
@@ -40,6 +42,7 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           <NotificationBell />
           <AuthNav compact />
         </div>

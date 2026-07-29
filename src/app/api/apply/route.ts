@@ -52,10 +52,10 @@ export async function POST(req: Request) {
     );
   }
 
-  // Application details from the dialog.
-  const note = String(body?.note ?? "").trim();
-  const phone = String(body?.phone ?? "").trim();
-  const link = String(body?.link ?? "").trim();
+  // Application details from the dialog (length-capped to bound the store).
+  const note = String(body?.note ?? "").trim().slice(0, 2000);
+  const phone = String(body?.phone ?? "").trim().slice(0, 40);
+  const link = String(body?.link ?? "").trim().slice(0, 300);
   const details = [
     note,
     link ? `Portfolio/CV: ${link}` : "",

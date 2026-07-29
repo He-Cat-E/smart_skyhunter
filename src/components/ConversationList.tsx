@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Spinner } from "@/components/icons";
+import { MemberProfileModal } from "@/components/MemberProfileModal";
 
 type Conv = {
   id: string;
@@ -11,6 +12,10 @@ type Conv = {
   display: string;
   lastMessage: string;
   lastMessageAt: string;
+  typing?: boolean;
+  peerEmail?: string | null;
+  unread?: number;
+  avatarUrl?: string;
 };
 
 const AVATAR_COLORS = [
@@ -41,6 +46,7 @@ export function ConversationList() {
   const [convs, setConvs] = useState<Conv[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [q, setQ] = useState("");
+  const [profileEmail, setProfileEmail] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,13 +82,13 @@ export function ConversationList() {
   return (
     <div className="flex h-full flex-col">
       {/* Header + search */}
-      <div className="shrink-0 border-b border-white/5 p-3">
-        <h1 className="px-1 pb-2.5 text-lg font-semibold text-white">Messages</h1>
+      <div className="shrink-0 border-b border-steel-line p-3">
+        <h1 className="px-1 pb-2.5 text-lg font-semibold text-chrome">Chat</h1>
         <div className="relative">
           <svg
             viewBox="0 0 24 24"
             fill="none"
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fog"
           >
             <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7" />
             <path d="M20 20l-3.2-3.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
@@ -91,7 +97,7 @@ export function ConversationList() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search"
-            className="w-full rounded-full border border-white/10 bg-[#0f1014] py-2 pl-9 pr-3 text-sm text-gray-100 outline-none transition-colors placeholder:text-gray-500 focus:border-[#8710d8]/60"
+            className="w-full rounded-full border border-steel-line bg-void py-2 pl-9 pr-3 text-sm text-chrome outline-none transition-colors placeholder:text-faint focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -99,11 +105,11 @@ export function ConversationList() {
       {/* List */}
       <div className="min-h-0 flex-1 overflow-y-auto py-1">
         {!loaded ? (
-          <div className="flex justify-center py-10 text-gray-500">
+          <div className="flex justify-center py-10 text-fog">
             <Spinner className="h-5 w-5" />
           </div>
         ) : shown.length === 0 ? (
-          <div className="px-6 py-10 text-center text-sm text-gray-500">
+          <div className="px-6 py-10 text-center text-sm text-fog">
             {convs.length === 0
               ? "No conversations yet. When the team opens a chat or matches you with a contract, it appears here."
               : "No chats match your search."}
@@ -111,52 +117,113 @@ export function ConversationList() {
         ) : (
           shown.map((c) => {
             const active = pathname === `/messages/${c.id}`;
+            // The chat you're viewing is being marked read server-side — don't
+            // flash a stale badge on it.
+            const unread = active ? 0 : c.unread ?? 0;
             return (
               <Link
                 key={c.id}
                 href={`/messages/${c.id}`}
                 className={`mx-2 flex items-center gap-3 rounded-xl px-2.5 py-2.5 transition-colors ${
-                  active ? "bg-[#8710d8]" : "hover:bg-white/5"
+                  active ? "bg-blue-500/10" : "hover:bg-navy-soft"
                 }`}
               >
                 <span
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-semibold text-white ${colorFor(c.id)}`}
+                  role={c.peerEmail ? "button" : undefined}
+                  tabIndex={c.peerEmail ? 0 : undefined}
+                  title={c.peerEmail ? `View ${c.display}'s profile` : undefined}
+                  onClick={
+                    c.peerEmail
+                      ? (e) => {
+                          // Open the profile instead of navigating into the chat.
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setProfileEmail(c.peerEmail ?? null);
+                        }
+                      : undefined
+                  }
+                  onKeyDown={
+                    c.peerEmail
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setProfileEmail(c.peerEmail ?? null);
+                          }
+                        }
+                      : undefined
+                  }
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-semibold text-white ${c.avatarUrl ? "bg-steel" : colorFor(c.id)} ${c.peerEmail ? "cursor-pointer transition-opacity hover:opacity-80" : ""}`}
                 >
-                  {c.display.slice(0, 1).toUpperCase()}
+                  {c.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={c.avatarUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    c.display.slice(0, 1).toUpperCase()
+                  )}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <p
-                      className={`truncate font-medium ${active ? "text-white" : "text-gray-100"}`}
+                      className={`truncate font-semibold ${active ? "text-blue-500" : "text-chrome"}`}
                     >
                       {c.display}
                     </p>
                     <span
-                      className={`shrink-0 text-xs ${active ? "text-white/70" : "text-gray-500"}`}
+                      className={`shrink-0 text-xs ${
+                        unread > 0 ? "font-semibold text-blue-500" : "text-faint"
+                      }`}
                     >
                       {whenLabel(c.lastMessageAt)}
                     </span>
                   </div>
-                  <p
-                    className={`mt-0.5 flex items-center gap-1.5 truncate text-sm ${active ? "text-white/80" : "text-gray-400"}`}
-                  >
-                    {c.kind === "contract" && (
+                  <div className="mt-0.5 flex items-center justify-between gap-2">
+                    <p
+                      className={`flex min-w-0 flex-1 items-center gap-1.5 truncate text-sm ${
+                        unread > 0 ? "font-medium text-chrome" : "text-fog"
+                      }`}
+                    >
+                      {c.kind === "contract" && (
+                        <span className="rounded bg-cyan/10 px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase text-cyan">
+                          Contract
+                        </span>
+                      )}
+                      {c.typing ? (
+                        <span className="truncate font-medium text-blue-500">
+                          typing…
+                        </span>
+                      ) : (
+                        <span className="truncate">
+                          {c.lastMessage || "No messages yet"}
+                        </span>
+                      )}
+                    </p>
+                    {unread > 0 && (
                       <span
-                        className={`rounded px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase ${active ? "bg-white/20 text-white" : "bg-[#2aa79b]/20 text-[#4fd1c5]"}`}
+                        aria-label={`${unread} unread`}
+                        className="ml-1 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-blue-500 px-1.5 text-xs font-semibold text-white"
                       >
-                        Contract
+                        {unread > 99 ? "99+" : unread}
                       </span>
                     )}
-                    <span className="truncate">
-                      {c.lastMessage || "No messages yet"}
-                    </span>
-                  </p>
+                  </div>
                 </div>
               </Link>
             );
           })
         )}
       </div>
+
+      {profileEmail && (
+        <MemberProfileModal
+          email={profileEmail}
+          onClose={() => setProfileEmail(null)}
+        />
+      )}
     </div>
   );
 }

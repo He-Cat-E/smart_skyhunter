@@ -267,52 +267,6 @@ export function RequestsManager({
     }
   }
 
-  // Match two members for a contract chat.
-  const [matching, setMatching] = useState(false);
-  const [matchA, setMatchA] = useState("");
-  const [matchB, setMatchB] = useState("");
-  const [matchTitle, setMatchTitle] = useState("");
-  const [matchErr, setMatchErr] = useState("");
-  const [matchBusy, setMatchBusy] = useState(false);
-
-  function openMatch() {
-    setMatchA("");
-    setMatchB("");
-    setMatchTitle("");
-    setMatchErr("");
-    setMatching(true);
-  }
-
-  async function submitMatch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!matchA || !matchB || matchA === matchB) {
-      setMatchErr("Pick two different members.");
-      return;
-    }
-    setMatchBusy(true);
-    setMatchErr("");
-    try {
-      const res = await fetch("/api/messages/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          kind: "contract",
-          emailA: matchA,
-          emailB: matchB,
-          title: matchTitle.trim(),
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) throw new Error(json.error || "Couldn't match.");
-      setMatching(false);
-      router.push(`/messages/${json.id}`);
-    } catch (err) {
-      setMatchErr(err instanceof Error ? err.message : "Couldn't match.");
-    } finally {
-      setMatchBusy(false);
-    }
-  }
-
   const chips: { key: Filter; label: string; n: number }[] = [
     { key: "all", label: "All", n: counts.total },
     { key: "interview", label: "Interviews", n: counts.interview },
@@ -365,14 +319,6 @@ export function RequestsManager({
               <Check className="h-3.5 w-3.5" /> {flash}
             </span>
           )}
-          <button
-            onClick={openMatch}
-            disabled={members.length < 2}
-            title={members.length < 2 ? "Need at least two members" : undefined}
-            className="rounded-lg border border-cyan/40 px-4 py-2 text-sm font-semibold text-cyan transition-colors hover:bg-cyan/10 disabled:opacity-50"
-          >
-            Connect two members
-          </button>
           <button
             onClick={openCreate}
             disabled={members.length === 0}
@@ -524,88 +470,6 @@ export function RequestsManager({
         <span className="font-medium text-mist">Schedule</span> button appears to
         set the time and link.
       </p>
-
-      {matching && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-chrome/40 backdrop-blur-sm"
-            onClick={() => setMatching(false)}
-            aria-hidden="true"
-          />
-          <div className="lift relative w-full max-w-md rounded-2xl border border-steel-line bg-void p-6 text-left">
-            <h3 className="font-display text-xl font-semibold text-chrome">
-              Connect two members
-            </h3>
-            <p className="mt-1 text-sm text-fog">
-              Open a private real-time chat between two members for a contract.
-              Both will be notified.
-            </p>
-
-            <form onSubmit={submitMatch} className="mt-5 space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-mist">
-                  First member
-                </label>
-                <MemberPicker
-                  members={members}
-                  value={matchA}
-                  onChange={setMatchA}
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-mist">
-                  Second member
-                </label>
-                <MemberPicker
-                  members={members.filter((m) => m.email !== matchA)}
-                  value={matchB}
-                  onChange={setMatchB}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="match-title"
-                  className="mb-1.5 block text-sm font-medium text-mist"
-                >
-                  Context <span className="text-faint">(optional)</span>
-                </label>
-                <input
-                  id="match-title"
-                  type="text"
-                  value={matchTitle}
-                  onChange={(e) => setMatchTitle(e.target.value)}
-                  placeholder="e.g. AI-oversight contract"
-                  className="w-full rounded-lg border border-steel-line bg-void px-3.5 py-2.5 text-sm text-chrome outline-none transition-colors placeholder:text-faint focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-
-              {matchErr && (
-                <p className="rounded-lg border border-red-300 bg-red-50 px-4 py-2.5 text-sm text-red-700">
-                  {matchErr}
-                </p>
-              )}
-
-              <div className="flex items-center justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setMatching(false)}
-                  className="rounded-lg border border-steel-line px-4 py-2.5 text-sm font-medium text-mist transition-colors hover:text-chrome"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={matchBusy}
-                  className="inline-flex min-w-[9rem] items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-400 disabled:opacity-60"
-                >
-                  {matchBusy && <Spinner className="h-4 w-4" />}
-                  {matchBusy ? "Connecting…" : "Connect & open chat"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {creating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

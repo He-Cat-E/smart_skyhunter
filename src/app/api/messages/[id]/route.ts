@@ -4,9 +4,11 @@ import {
   conversationGet,
   messagesList,
   messageAdd,
+  markConversationRead,
   type Conversation,
 } from "@/lib/store";
-import { notifyUser, notifyAdmins } from "@/lib/notify";
+import { typingIn, clearTyping } from "@/lib/typing";
+import { rateLimit, tooMany } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -14,22 +16,29 @@ function canAccess(conv: Conversation, email: string, admin: boolean): boolean {
   return admin || conv.participants.includes(email.toLowerCase());
 }
 
-// What the current viewer sees this conversation titled as.
-async function displayFor(
+// What the current viewer sees this conversation titled as, plus the other
+// party's avatar photo (empty when there's no member peer, e.g. support).
+async function headerFor(
   conv: Conversation,
   me: string,
   admin: boolean,
-): Promise<string> {
+): Promise<{ display: string; avatarUrl: string }> {
   if (conv.kind === "support") {
     if (admin) {
       const m = await findUser(conv.participants[0] ?? "");
-      return m ? `${m.name} · Support chat` : "Support chat";
+      return {
+        display: m ? `${m.name} · Support chat` : "Support chat",
+        avatarUrl: m?.profile.avatarUrl ?? "",
+      };
     }
-    return "SkyHunter Support";
+    return { display: "SkyHunter Support", avatarUrl: "" };
   }
   const other = conv.participants.find((p) => p !== me);
   const m = other ? await findUser(other) : null;
-  return m ? m.name : (other ?? "Member");
+  return {
+    display: m ? m.name : (other ?? "Member"),
+    avatarUrl: m?.profile.avatarUrl ?? "",
+  };
 }
 
 export async function GET(
@@ -49,15 +58,42 @@ export async function GET(
   }
 
   const messages = await messagesList(id);
+
+  // Viewing the thread counts as reading it — clears the unread badge.
+  await markConversationRead(id, me);
+
+  // Who (other than me) is typing right now?
+  let typing: string | null = null;
+  const typers = typingIn(id, me);
+  if (typers.length) {
+    const u = await findUser(typers[0]);
+    typing =
+      conv.kind === "support" && u && isAdminUser(u)
+        ? "SkyHunter Support"
+        : (u?.name ?? "Someone");
+  }
+
+  // For a member↔member contract, the peer's email lets the UI open their
+  // profile from the chat header. Support chats have no member peer.
+  const peerEmail =
+    conv.kind === "contract"
+      ? (conv.participants.find((p) => p !== me) ?? null)
+      : null;
+
+  const header = await headerFor(conv, me, admin);
+
   return NextResponse.json({
     ok: true,
     me,
     conversation: {
       id: conv.id,
       kind: conv.kind,
-      display: await displayFor(conv, me, admin),
+      display: header.display,
+      avatarUrl: header.avatarUrl,
+      peerEmail,
     },
     messages,
+    typing,
   });
 }
 
@@ -77,6 +113,10 @@ export async function POST(
     return NextResponse.json({ ok: false, error: "No access." }, { status: 403 });
   }
 
+  // Curb message flooding — generous for humans, throttles scripted spam.
+  const limit = rateLimit(`msg:${me}:${conv.id}`, 20, 10_000);
+  if (!limit.ok) return tooMany(limit.retryAfter);
+
   const body = await req.json().catch(() => null);
   const text = String(body?.body ?? "").trim().slice(0, 4000);
   if (!text) {
@@ -88,35 +128,15 @@ export async function POST(
     admin && conv.kind === "support" ? "SkyHunter Support" : user.name;
   const message = await messageAdd(conv.id, me, senderName, text);
 
-  // Notify the other side (best-effort).
-  const preview = text.length > 90 ? text.slice(0, 90) + "…" : text;
-  if (conv.kind === "support") {
-    if (admin) {
-      // support → the member
-      await notifyUser(conv.participants[0] ?? "", {
-        type: `message:${conv.id}`,
-        title: "New message from SkyHunter Support",
-        body: preview,
-      });
-    } else {
-      // member → the support team
-      await notifyAdmins({
-        type: `message:${conv.id}`,
-        title: `New message from ${user.name}`,
-        body: preview,
-      });
-    }
-  } else {
-    // contract chat: notify the other participant
-    const other = conv.participants.find((p) => p !== me);
-    if (other) {
-      await notifyUser(other, {
-        type: `message:${conv.id}`,
-        title: `New message from ${user.name}`,
-        body: preview,
-      });
-    }
-  }
+  // Sending a message means we've stopped typing — clear it now so the other
+  // side's "typing…" disappears the instant the message arrives (header + list
+  // stay in sync) rather than lingering for the typing TTL.
+  clearTyping(conv.id, me);
+
+  // No bell notification for chat messages — unread counts surface on the
+  // conversation list instead (see /api/messages/conversations). The sender has
+  // implicitly read their own message.
+  await markConversationRead(conv.id, me);
 
   return NextResponse.json({ ok: true, message });
 }

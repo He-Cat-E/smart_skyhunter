@@ -7,6 +7,7 @@ import { notifyUser, notifyAdmins } from "@/lib/notify";
 import { passwordError } from "@/lib/password";
 import { lookupSignupMeta } from "@/lib/geo";
 import { IS_DEV } from "@/lib/flags";
+import { rateLimit, clientIp, tooMany } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
 
   // --- Bot check ---------------------------------------------------------
   // Honeypot: a real person never fills this hidden field.
-  if (String(body.company ?? "").trim()) {
+  if (String(body.hp_check ?? "").trim()) {
     return NextResponse.json({ ok: false, error: "Bot detected." }, { status: 400 });
   }
   // Discord-style human check: the box must be verified, and it can't have been
@@ -37,10 +38,16 @@ export async function POST(req: Request) {
     );
   }
 
-  const name = String(body.name ?? "").trim();
-  const email = String(body.email ?? "").trim();
+  // Throttle account creation + verification-email sends (email bombing / mass
+  // signups), per IP and per target email address.
+  const ip = clientIp(req);
+  const ipLimit = rateLimit(`signup:ip:${ip}`, 8, 600_000);
+  if (!ipLimit.ok) return tooMany(ipLimit.retryAfter);
+
+  const name = String(body.name ?? "").trim().slice(0, 120);
+  const email = String(body.email ?? "").trim().slice(0, 200);
   const password = String(body.password ?? "");
-  const location = String(body.location ?? "").trim();
+  const location = String(body.location ?? "").trim().slice(0, 160);
 
   if (!name) {
     return NextResponse.json({ ok: false, error: "Please tell us your name." }, { status: 400 });
@@ -48,6 +55,9 @@ export async function POST(req: Request) {
   if (!isValidEmail(email)) {
     return NextResponse.json({ ok: false, error: "That email doesn't look right." }, { status: 400 });
   }
+
+  const emailLimit = rateLimit(`signup:email:${email.toLowerCase()}`, 3, 600_000);
+  if (!emailLimit.ok) return tooMany(emailLimit.retryAfter);
   const pwErr = passwordError(password);
   if (pwErr) {
     return NextResponse.json({ ok: false, error: pwErr }, { status: 400 });
@@ -71,9 +81,9 @@ export async function POST(req: Request) {
   const signup = await lookupSignupMeta(req.headers);
 
   const profile = {
-    previousRole: String(body.previousRole ?? "").trim(),
-    industry: String(body.industry ?? "").trim(),
-    situation: String(body.situation ?? "").trim(),
+    previousRole: String(body.previousRole ?? "").trim().slice(0, 120),
+    industry: String(body.industry ?? "").trim().slice(0, 80),
+    situation: String(body.situation ?? "").trim().slice(0, 120),
     location,
     signup,
   };

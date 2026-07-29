@@ -123,6 +123,15 @@ create table if not exists public.messages (
 create index if not exists messages_conversation_idx
   on public.messages (conversation_id, created_at);
 
+-- Per-(conversation, member) "last read" markers that drive unread badges.
+-- One row per participant per conversation; upserted whenever they view a chat.
+create table if not exists public.chat_reads (
+  conversation_id uuid not null references public.conversations(id) on delete cascade,
+  email           text not null,
+  last_read_at    timestamptz not null default now(),
+  primary key (conversation_id, email)
+);
+
 alter table public.users           enable row level security;
 alter table public.pending_signups enable row level security;
 alter table public.registrations   enable row level security;

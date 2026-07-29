@@ -162,6 +162,34 @@ async function store<T>(
   }
 }
 
+// Chat ops poll frequently. If the chat tables are missing, doing a failed
+// Supabase round-trip on every poll is slow, so after one "missing" error we
+// short-circuit chat reads/writes straight to the local store for a while, then
+// re-probe (auto-picks up the tables once they're created). Only chat functions
+// use this — other tables keep using store().
+let chatMissingUntil = 0;
+async function chatStore<T>(
+  sbFn: (sb: SB) => Promise<T>,
+  fileFn: () => Promise<T>,
+): Promise<T> {
+  if (Date.now() < chatMissingUntil) return fileFn();
+  const sb = getSupabase();
+  if (!sb) return fileFn();
+  try {
+    return await sbFn(sb);
+  } catch (err) {
+    if (isMissingTable(err)) {
+      chatMissingUntil = Date.now() + 60_000;
+      return fileFn();
+    }
+    if (isRecoverableError(err)) {
+      noteSupabaseDown();
+      return fileFn();
+    }
+    throw err;
+  }
+}
+
 // ---- file helpers --------------------------------------------------------
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -1203,7 +1231,7 @@ export async function conversationCreate(
 ): Promise<Conversation> {
   const parts = Array.from(new Set(participants.map(lc)));
   const now = new Date().toISOString();
-  return store(
+  return chatStore(
     async (sb) => {
       const { data, error } = await sb
         .from("conversations")
@@ -1238,7 +1266,7 @@ export async function conversationCreate(
 }
 
 export async function conversationGet(id: string): Promise<Conversation | null> {
-  return store(
+  return chatStore(
     async (sb) => {
       const { data, error } = await sb
         .from("conversations")
@@ -1256,7 +1284,7 @@ export async function conversationGet(id: string): Promise<Conversation | null> 
 }
 
 export async function conversationsForUser(email: string): Promise<Conversation[]> {
-  return store(
+  return chatStore(
     async (sb) => {
       const { data, error } = await sb
         .from("conversations")
@@ -1276,7 +1304,7 @@ export async function conversationsForUser(email: string): Promise<Conversation[
 }
 
 export async function conversationsAll(): Promise<Conversation[]> {
-  return store(
+  return chatStore(
     async (sb) => {
       const { data, error } = await sb
         .from("conversations")
@@ -1301,7 +1329,7 @@ export async function supportConversationFor(
 }
 
 export async function messagesList(conversationId: string): Promise<ChatMessage[]> {
-  return store(
+  return chatStore(
     async (sb) => {
       const { data, error } = await sb
         .from("messages")
@@ -1328,7 +1356,7 @@ export async function messageAdd(
 ): Promise<ChatMessage> {
   const now = new Date().toISOString();
   const preview = body.slice(0, 120);
-  return store(
+  return chatStore(
     async (sb) => {
       const { data, error } = await sb
         .from("messages")
@@ -1369,4 +1397,130 @@ export async function messageAdd(
       return row;
     },
   );
+}
+
+// Delete a conversation and all its messages (admin unmatch / cleanup).
+export async function conversationDelete(id: string): Promise<void> {
+  return chatStore(
+    async (sb) => {
+      // messages cascade via FK, but delete explicitly for safety.
+      await sb.from("messages").delete().eq("conversation_id", id);
+      const { error } = await sb.from("conversations").delete().eq("id", id);
+      if (error) throw error;
+    },
+    async () => {
+      const convs = await readJson<Conversation[]>("conversations.json", []);
+      await writeJson(
+        "conversations.json",
+        convs.filter((c) => c.id !== id),
+      );
+      const msgs = await readJson<ChatMessage[]>("messages.json", []);
+      await writeJson(
+        "messages.json",
+        msgs.filter((m) => m.conversationId !== id),
+      );
+    },
+  );
+}
+
+// ---- unread tracking -----------------------------------------------------
+// Per-(conversation, member) "last read" markers. These are lightweight UI
+// state — which chats a member has caught up on — not durable records, so they
+// live in the local file store rather than adding a Supabase table.
+
+type ConvRead = { conversationId: string; email: string; lastReadAt: string };
+
+// Mark a conversation as read for a member (call whenever they view it).
+// Persists to Supabase (chat_reads table) when configured so unread badges
+// survive across serverless instances; falls back to the local file otherwise.
+export async function markConversationRead(
+  conversationId: string,
+  email: string,
+): Promise<void> {
+  const e = lc(email);
+  const now = new Date().toISOString();
+  return chatStore(
+    async (sb) => {
+      const { error } = await sb
+        .from("chat_reads")
+        .upsert(
+          { conversation_id: conversationId, email: e, last_read_at: now },
+          { onConflict: "conversation_id,email" },
+        );
+      if (error) throw error;
+    },
+    async () => {
+      const list = await readJson<ConvRead[]>("chat-reads.json", []);
+      const existing = list.find(
+        (r) => r.conversationId === conversationId && r.email === e,
+      );
+      if (existing) existing.lastReadAt = now;
+      else list.push({ conversationId, email: e, lastReadAt: now });
+      await writeJson("chat-reads.json", list);
+    },
+  );
+}
+
+// A member's read markers, as { conversationId -> lastReadAt ISO }.
+export async function conversationReads(
+  email: string,
+): Promise<Record<string, string>> {
+  const e = lc(email);
+  return chatStore(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("chat_reads")
+        .select("conversation_id,last_read_at")
+        .eq("email", e);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const r of data ?? []) map[String(r.conversation_id)] = r.last_read_at;
+      return map;
+    },
+    async () => {
+      const list = await readJson<ConvRead[]>("chat-reads.json", []);
+      const map: Record<string, string> = {};
+      for (const r of list) if (r.email === e) map[r.conversationId] = r.lastReadAt;
+      return map;
+    },
+  );
+}
+
+// How many messages in a conversation the member hasn't seen yet — i.e. sent by
+// someone else after their last read.
+export async function unreadCount(
+  conversationId: string,
+  email: string,
+  lastReadAt?: string,
+): Promise<number> {
+  const e = lc(email);
+  const msgs = await messagesList(conversationId);
+  return msgs.filter(
+    (m) =>
+      m.senderEmail.toLowerCase() !== e &&
+      (!lastReadAt || m.createdAt > lastReadAt),
+  ).length;
+}
+
+// Health check: are the chat tables actually present in Supabase? Used to warn
+// the admin when chat is silently running on the (non-durable) local fallback
+// because the schema hasn't been applied. Returns true when using the local
+// file store (dev) or when the tables exist.
+// Only the "ready" result is cached (permanently) — a "missing" result is
+// re-checked each call, so the banner clears as soon as the tables are created
+// (no server restart needed) without probing forever once things are set up.
+let chatReadyCache = false;
+export async function chatTablesReady(): Promise<boolean> {
+  if (chatReadyCache) return true;
+  const sb = getSupabase();
+  if (!sb) return true; // local file store — fine
+  try {
+    const { error } = await sb.from("conversations").select("id").limit(1);
+    const missing =
+      !!error && (error.code === "PGRST205" || error.code === "42P01");
+    if (!missing) chatReadyCache = true;
+    return !missing;
+  } catch {
+    return true; // transient — don't nag
+  }
 }

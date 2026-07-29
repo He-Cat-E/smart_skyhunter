@@ -108,6 +108,12 @@ export async function fetchProfile(
     throw new Error(`userinfo ${res.status}: ${await res.text()}`);
   }
   const j = await res.json();
+  // Only trust an email the provider has actually verified — otherwise someone
+  // could set a victim's address on their own provider profile and sign in as
+  // the victim's existing account (the callback merges by email).
+  if (j.email_verified !== true && j.email_verified !== "true") {
+    throw new Error("provider did not confirm a verified email");
+  }
   const email = String(j.email ?? "").trim().toLowerCase();
   const displayName =
     j.name ||

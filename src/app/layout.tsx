@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { AuthProvider } from "@/components/AuthProvider";
+import { ChatNotifier } from "@/components/ChatNotifier";
 
 // Variable fonts: omitting `weight` loads a single variable file that covers
 // every weight we use (Tailwind's medium→extrabold), instead of one static
@@ -50,9 +51,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${jakarta.variable} ${inter.variable} ${spaceGrotesk.variable}`}
     >
       <body className="min-h-screen antialiased">
+        {/* Set the theme before first paint so there's no light/dark flash.
+            Reads the saved choice, else falls back to the OS preference. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('sky_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();",
+          }}
+        />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-blue-500 focus:px-4 focus:py-2 focus:text-white"
@@ -63,6 +73,7 @@ export default function RootLayout({
           <Navbar />
           <main id="main">{children}</main>
           <Footer />
+          <ChatNotifier />
         </AuthProvider>
       </body>
     </html>

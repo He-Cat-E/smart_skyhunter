@@ -1,23 +1,26 @@
-import { listUsers } from "@/lib/store";
+import { listUsers, registrationList } from "@/lib/store";
 import { requireAdmin } from "@/lib/auth";
 import { signupLocationLabel } from "@/lib/geo";
-import { UsersManager } from "@/components/admin/UsersManager";
+import { UsersView } from "@/components/admin/UsersView";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
   const admin = await requireAdmin();
-  const users = await listUsers();
+  const [users, signups] = await Promise.all([listUsers(), registrationList()]);
 
   return (
     <div>
       <h2 className="mb-1 font-display text-xl font-semibold text-chrome">
-        Users
+        Users &amp; signups
       </h2>
       <p className="mb-4 max-w-2xl text-sm text-fog">
-        Each member&apos;s sign-up location and whether they signed up behind a
-        VPN/proxy or a VPS/hosting IP.
+        Members and their sign-up details — location, whether they used a
+        VPN/proxy or VPS IP, plus the raw signup log.
       </p>
-      <UsersManager
+      <UsersView
         currentEmail={admin?.email ?? ""}
+        signups={signups}
         users={users.map((u) => {
           const s = u.profile?.signup;
           return {
