@@ -4,6 +4,8 @@ import {
   conversationGet,
   messagesList,
   messageAdd,
+  messageEdit,
+  messageDelete,
   markConversationRead,
   type Conversation,
 } from "@/lib/store";
@@ -94,6 +96,7 @@ export async function GET(
     },
     messages,
     typing,
+    isAdmin: admin,
   });
 }
 
@@ -122,11 +125,12 @@ export async function POST(
   if (!text) {
     return NextResponse.json({ ok: false, error: "Empty message." }, { status: 400 });
   }
+  const replyToId = body?.replyToId ? String(body.replyToId).slice(0, 64) : null;
 
   // Admins speak for the support team in support chats.
   const senderName =
     admin && conv.kind === "support" ? "SkyHunter Support" : user.name;
-  const message = await messageAdd(conv.id, me, senderName, text);
+  const message = await messageAdd(conv.id, me, senderName, text, replyToId);
 
   // Sending a message means we've stopped typing — clear it now so the other
   // side's "typing…" disappears the instant the message arrives (header + list
@@ -139,4 +143,74 @@ export async function POST(
   await markConversationRead(conv.id, me);
 
   return NextResponse.json({ ok: true, message });
+}
+
+// Edit a message (sender only).
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ ok: false }, { status: 401 });
+  const { id } = await params;
+  const conv = await conversationGet(id);
+  if (!conv) return NextResponse.json({ ok: false }, { status: 404 });
+
+  const admin = isAdminUser(user);
+  const me = user.email.toLowerCase();
+  if (!canAccess(conv, me, admin)) {
+    return NextResponse.json({ ok: false, error: "No access." }, { status: 403 });
+  }
+
+  const limit = rateLimit(`msg:${me}:${conv.id}`, 20, 10_000);
+  if (!limit.ok) return tooMany(limit.retryAfter);
+
+  const body = await req.json().catch(() => null);
+  const messageId = String(body?.messageId ?? "");
+  const text = String(body?.body ?? "").trim().slice(0, 4000);
+  if (!messageId || !text) {
+    return NextResponse.json({ ok: false, error: "Nothing to save." }, { status: 400 });
+  }
+
+  const message = await messageEdit(conv.id, messageId, me, text);
+  if (!message) {
+    return NextResponse.json(
+      { ok: false, error: "You can only edit your own message." },
+      { status: 403 },
+    );
+  }
+  return NextResponse.json({ ok: true, message });
+}
+
+// Delete a message (sender, or an admin moderating).
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ ok: false }, { status: 401 });
+  const { id } = await params;
+  const conv = await conversationGet(id);
+  if (!conv) return NextResponse.json({ ok: false }, { status: 404 });
+
+  const admin = isAdminUser(user);
+  const me = user.email.toLowerCase();
+  if (!canAccess(conv, me, admin)) {
+    return NextResponse.json({ ok: false, error: "No access." }, { status: 403 });
+  }
+
+  const body = await req.json().catch(() => null);
+  const messageId = String(body?.messageId ?? "");
+  if (!messageId) {
+    return NextResponse.json({ ok: false, error: "No message." }, { status: 400 });
+  }
+
+  const ok = await messageDelete(conv.id, messageId, me, admin);
+  if (!ok) {
+    return NextResponse.json(
+      { ok: false, error: "You can only delete your own message." },
+      { status: 403 },
+    );
+  }
+  return NextResponse.json({ ok: true });
 }

@@ -123,6 +123,10 @@ create table if not exists public.messages (
 create index if not exists messages_conversation_idx
   on public.messages (conversation_id, created_at);
 
+-- Reply threading + edit marker (added after initial launch).
+alter table public.messages add column if not exists reply_to_id uuid;
+alter table public.messages add column if not exists edited_at   timestamptz;
+
 -- Per-(conversation, member) "last read" markers that drive unread badges.
 -- One row per participant per conversation; upserted whenever they view a chat.
 create table if not exists public.chat_reads (
@@ -132,6 +136,27 @@ create table if not exists public.chat_reads (
   primary key (conversation_id, email)
 );
 
+-- Lightweight analytics: one row per tracked event (visits, logins). Signups
+-- are derived from users.created_at, so they aren't duplicated here.
+create table if not exists public.stat_events (
+  id         uuid primary key default gen_random_uuid(),
+  type       text not null,
+  email      text not null default '',
+  created_at timestamptz not null default now()
+);
+create index if not exists stat_events_created_idx on public.stat_events (created_at);
+
+-- Online presence: heartbeats from signed-in users. "Online" = a recent
+-- last_seen_at. One row per member, upserted on each heartbeat.
+create table if not exists public.presence (
+  email        text primary key,
+  name         text not null default '',
+  last_seen_at timestamptz not null default now()
+);
+create index if not exists presence_seen_idx on public.presence (last_seen_at);
+
+alter table public.stat_events     enable row level security;
+alter table public.presence        enable row level security;
 alter table public.users           enable row level security;
 alter table public.pending_signups enable row level security;
 alter table public.registrations   enable row level security;

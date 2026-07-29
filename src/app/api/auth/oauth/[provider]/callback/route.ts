@@ -16,6 +16,7 @@ import {
 } from "@/lib/auth";
 import { lookupSignupMeta } from "@/lib/geo";
 import { recordSignup } from "@/lib/sheet";
+import { recordEvent } from "@/lib/store";
 import { notifyUser, notifyAdmins } from "@/lib/notify";
 
 export const runtime = "nodejs";
@@ -135,6 +136,8 @@ export async function GET(
         body: `You signed in with ${cfg.label}.`,
       });
     }
+
+    await recordEvent("login", user.email).catch(() => {});
 
     const res = NextResponse.redirect(new URL("/dashboard", req.url));
     const sc = sessionCookie({ email: user.email, name: user.name });

@@ -5,6 +5,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ChatNotifier } from "@/components/ChatNotifier";
+import { VisitTracker } from "@/components/VisitTracker";
+import { PresenceBeacon } from "@/components/PresenceBeacon";
 
 // Variable fonts: omitting `weight` loads a single variable file that covers
 // every weight we use (Tailwind's medium→extrabold), instead of one static
@@ -74,6 +76,8 @@ export default function RootLayout({
           <main id="main">{children}</main>
           <Footer />
           <ChatNotifier />
+          <VisitTracker />
+          <PresenceBeacon />
         </AuthProvider>
       </body>
     </html>

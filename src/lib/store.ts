@@ -1199,6 +1199,8 @@ export type ChatMessage = {
   senderName: string;
   body: string;
   createdAt: string;
+  replyToId?: string | null; // message this one is a reply to
+  editedAt?: string | null; // set when the body was edited
 };
 
 function rowToConversation(r: any): Conversation {
@@ -1221,6 +1223,8 @@ function rowToMessage(r: any): ChatMessage {
     senderName: r.sender_name ?? "",
     body: r.body ?? "",
     createdAt: r.created_at,
+    replyToId: r.reply_to_id ?? null,
+    editedAt: r.edited_at ?? null,
   };
 }
 
@@ -1353,9 +1357,11 @@ export async function messageAdd(
   senderEmail: string,
   senderName: string,
   body: string,
+  replyToId?: string | null,
 ): Promise<ChatMessage> {
   const now = new Date().toISOString();
   const preview = body.slice(0, 120);
+  const reply = replyToId || null;
   return chatStore(
     async (sb) => {
       const { data, error } = await sb
@@ -1365,6 +1371,7 @@ export async function messageAdd(
           sender_email: lc(senderEmail),
           sender_name: senderName,
           body,
+          reply_to_id: reply,
         })
         .select("*")
         .single();
@@ -1384,6 +1391,8 @@ export async function messageAdd(
         senderName,
         body,
         createdAt: now,
+        replyToId: reply,
+        editedAt: null,
       };
       list.push(row);
       await writeJson("messages.json", list);
@@ -1395,6 +1404,132 @@ export async function messageAdd(
         }
       await writeJson("conversations.json", convs);
       return row;
+    },
+  );
+}
+
+// Edit a message's body (only the original sender). Returns the updated message
+// or null if it isn't found / isn't theirs. Keeps the conversation preview in
+// sync when the edited message is the latest one.
+export async function messageEdit(
+  conversationId: string,
+  id: string,
+  senderEmail: string,
+  body: string,
+): Promise<ChatMessage | null> {
+  const now = new Date().toISOString();
+  const preview = body.slice(0, 120);
+  return chatStore(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("messages")
+        .update({ body, edited_at: now })
+        .eq("id", id)
+        .eq("conversation_id", conversationId)
+        .eq("sender_email", lc(senderEmail))
+        .select("*")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return null;
+      const { data: latest } = await sb
+        .from("messages")
+        .select("id")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latest && String(latest.id) === id) {
+        await sb
+          .from("conversations")
+          .update({ last_message: preview })
+          .eq("id", conversationId);
+      }
+      return rowToMessage(data);
+    },
+    async () => {
+      const list = await readJson<ChatMessage[]>("messages.json", []);
+      const msg = list.find(
+        (m) =>
+          m.id === id &&
+          m.conversationId === conversationId &&
+          m.senderEmail === lc(senderEmail),
+      );
+      if (!msg) return null;
+      msg.body = body;
+      msg.editedAt = now;
+      await writeJson("messages.json", list);
+      const convMsgs = list
+        .filter((m) => m.conversationId === conversationId)
+        .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+      if (convMsgs.length && convMsgs[convMsgs.length - 1].id === id) {
+        const convs = await readJson<Conversation[]>("conversations.json", []);
+        for (const c of convs) if (c.id === conversationId) c.lastMessage = preview;
+        await writeJson("conversations.json", convs);
+      }
+      return msg;
+    },
+  );
+}
+
+// Delete a single message. Allowed for the original sender, or an admin
+// (moderation). Returns true if a row was removed. Recomputes the conversation
+// preview from whatever remains.
+export async function messageDelete(
+  conversationId: string,
+  id: string,
+  requesterEmail: string,
+  isAdmin: boolean,
+): Promise<boolean> {
+  return chatStore(
+    async (sb) => {
+      let q = sb
+        .from("messages")
+        .delete()
+        .eq("id", id)
+        .eq("conversation_id", conversationId);
+      if (!isAdmin) q = q.eq("sender_email", lc(requesterEmail));
+      const { data, error } = await q.select("id");
+      if (error) throw error;
+      if (!data || data.length === 0) return false;
+      const { data: latest } = await sb
+        .from("messages")
+        .select("body, created_at")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      await sb
+        .from("conversations")
+        .update({
+          last_message: latest?.body ? String(latest.body).slice(0, 120) : "",
+          ...(latest?.created_at ? { last_message_at: latest.created_at } : {}),
+        })
+        .eq("id", conversationId);
+      return true;
+    },
+    async () => {
+      const list = await readJson<ChatMessage[]>("messages.json", []);
+      const idx = list.findIndex(
+        (m) =>
+          m.id === id &&
+          m.conversationId === conversationId &&
+          (isAdmin || m.senderEmail === lc(requesterEmail)),
+      );
+      if (idx === -1) return false;
+      list.splice(idx, 1);
+      await writeJson("messages.json", list);
+      const remaining = list
+        .filter((m) => m.conversationId === conversationId)
+        .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+      const last = remaining[remaining.length - 1];
+      const convs = await readJson<Conversation[]>("conversations.json", []);
+      for (const c of convs)
+        if (c.id === conversationId) {
+          c.lastMessage = last ? last.body.slice(0, 120) : "";
+          if (last) c.lastMessageAt = last.createdAt;
+        }
+      await writeJson("conversations.json", convs);
+      return true;
     },
   );
 }
@@ -1523,4 +1658,109 @@ export async function chatTablesReady(): Promise<boolean> {
   } catch {
     return true; // transient — don't nag
   }
+}
+
+// ---- analytics + presence -------------------------------------------------
+
+export type StatEvent = {
+  id: string;
+  type: string; // "visit" | "login"
+  email: string;
+  createdAt: string;
+};
+
+export type Presence = { email: string; name: string; lastSeenAt: string };
+
+// Record a tracked event (a page visit, a login, …). Best-effort — analytics
+// must never break the request that triggered it, so callers swallow errors.
+export async function recordEvent(type: string, email = ""): Promise<void> {
+  const now = new Date().toISOString();
+  return store(
+    async (sb) => {
+      const { error } = await sb
+        .from("stat_events")
+        .insert({ type, email: lc(email), created_at: now });
+      if (error) throw error;
+    },
+    async () => {
+      const list = await readJson<StatEvent[]>("stat-events.json", []);
+      list.push({ id: crypto.randomUUID(), type, email: lc(email), createdAt: now });
+      // Bound the dev file so it can't grow without limit.
+      if (list.length > 20000) list.splice(0, list.length - 20000);
+      await writeJson("stat-events.json", list);
+    },
+  );
+}
+
+// All tracked events since a cutoff (for daily aggregation).
+export async function eventsSince(sinceIso: string): Promise<StatEvent[]> {
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("stat_events")
+        .select("*")
+        .gte("created_at", sinceIso);
+      if (error) throw error;
+      return (data ?? []).map((r: any) => ({
+        id: String(r.id),
+        type: r.type,
+        email: r.email ?? "",
+        createdAt: r.created_at,
+      }));
+    },
+    async () => {
+      const list = await readJson<StatEvent[]>("stat-events.json", []);
+      return list.filter((e) => e.createdAt >= sinceIso);
+    },
+  );
+}
+
+// Upsert a member's presence heartbeat.
+export async function heartbeat(email: string, name: string): Promise<void> {
+  const now = new Date().toISOString();
+  const e = lc(email);
+  return store(
+    async (sb) => {
+      const { error } = await sb
+        .from("presence")
+        .upsert({ email: e, name, last_seen_at: now }, { onConflict: "email" });
+      if (error) throw error;
+    },
+    async () => {
+      const list = await readJson<Presence[]>("presence.json", []);
+      const ex = list.find((p) => p.email === e);
+      if (ex) {
+        ex.lastSeenAt = now;
+        ex.name = name;
+      } else {
+        list.push({ email: e, name, lastSeenAt: now });
+      }
+      await writeJson("presence.json", list);
+    },
+  );
+}
+
+// Members seen since a cutoff (the "online now" list), most-recent first.
+export async function onlineUsers(sinceIso: string): Promise<Presence[]> {
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("presence")
+        .select("*")
+        .gte("last_seen_at", sinceIso)
+        .order("last_seen_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map((r: any) => ({
+        email: r.email,
+        name: r.name ?? "",
+        lastSeenAt: r.last_seen_at,
+      }));
+    },
+    async () => {
+      const list = await readJson<Presence[]>("presence.json", []);
+      return list
+        .filter((p) => p.lastSeenAt >= sinceIso)
+        .sort((a, b) => (a.lastSeenAt < b.lastSeenAt ? 1 : -1));
+    },
+  );
 }

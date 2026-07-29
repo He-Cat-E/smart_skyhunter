@@ -7,6 +7,7 @@ import {
   hashPassword,
 } from "@/lib/auth";
 import { notifyUser } from "@/lib/notify";
+import { recordEvent } from "@/lib/store";
 import { rateLimit, clientIp, tooMany } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
@@ -72,6 +73,7 @@ export async function POST(req: Request) {
 
   const remember = body.remember !== false; // default to remembering
   await setSession({ email: user.email, name: user.name }, remember);
+  await recordEvent("login", user.email).catch(() => {});
   await notifyUser(user.email, {
     type: "signin",
     title: "New sign-in",
