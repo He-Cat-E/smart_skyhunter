@@ -61,7 +61,6 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [typing, setTyping] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [replyTo, setReplyTo] = useState<Msg | null>(null);
   const [editing, setEditing] = useState<Msg | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -111,7 +110,6 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
         setAvatarUrl(json.conversation?.avatarUrl ?? "");
         setMessages(json.messages ?? []);
         setTyping(json.typing ?? null);
-        setIsAdmin(!!json.isAdmin);
       }
     } catch {
       /* keep last state */
@@ -387,7 +385,7 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
               ? messages.find((x) => x.id === m.replyToId)
               : null;
             const menuOpen = menuFor === m.id;
-            const canDelete = mine || isAdmin;
+            const canDelete = mine; // you can only delete your own messages
 
             const actions = (
               <div

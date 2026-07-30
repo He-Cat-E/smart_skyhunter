@@ -1364,17 +1364,29 @@ export async function messageAdd(
   const reply = replyToId || null;
   return chatStore(
     async (sb) => {
-      const { data, error } = await sb
+      // Only reference reply_to_id when it's actually a reply, so ordinary
+      // sends keep working even if the column hasn't been migrated yet.
+      const payload: Record<string, unknown> = {
+        conversation_id: conversationId,
+        sender_email: lc(senderEmail),
+        sender_name: senderName,
+        body,
+      };
+      if (reply) payload.reply_to_id = reply;
+      let { data, error } = await sb
         .from("messages")
-        .insert({
-          conversation_id: conversationId,
-          sender_email: lc(senderEmail),
-          sender_name: senderName,
-          body,
-          reply_to_id: reply,
-        })
+        .insert(payload)
         .select("*")
         .single();
+      // DB not migrated for replies yet — resend without the reply link.
+      if (error && reply && isUnknownColumn(error)) {
+        delete payload.reply_to_id;
+        ({ data, error } = await sb
+          .from("messages")
+          .insert(payload)
+          .select("*")
+          .single());
+      }
       if (error) throw error;
       await sb
         .from("conversations")
@@ -1421,7 +1433,7 @@ export async function messageEdit(
   const preview = body.slice(0, 120);
   return chatStore(
     async (sb) => {
-      const { data, error } = await sb
+      let { data, error } = await sb
         .from("messages")
         .update({ body, edited_at: now })
         .eq("id", id)
@@ -1429,6 +1441,17 @@ export async function messageEdit(
         .eq("sender_email", lc(senderEmail))
         .select("*")
         .maybeSingle();
+      // edited_at column not migrated yet — save the body without the marker.
+      if (error && isUnknownColumn(error)) {
+        ({ data, error } = await sb
+          .from("messages")
+          .update({ body })
+          .eq("id", id)
+          .eq("conversation_id", conversationId)
+          .eq("sender_email", lc(senderEmail))
+          .select("*")
+          .maybeSingle());
+      }
       if (error) throw error;
       if (!data) return null;
       const { data: latest } = await sb
@@ -1736,6 +1759,86 @@ export async function heartbeat(email: string, name: string): Promise<void> {
         list.push({ email: e, name, lastSeenAt: now });
       }
       await writeJson("presence.json", list);
+    },
+  );
+}
+
+type ChatSeen = { email: string; chatSeenAt: string };
+
+// Heartbeat that a member is currently in the chat area. Kept separate from the
+// site-wide presence table so browsing elsewhere doesn't count as "in chat".
+export async function noteChatSeen(email: string): Promise<void> {
+  const now = new Date().toISOString();
+  const e = lc(email);
+  return store(
+    async (sb) => {
+      const { error } = await sb
+        .from("chat_presence")
+        .upsert({ email: e, chat_seen_at: now }, { onConflict: "email" });
+      if (error) throw error;
+    },
+    async () => {
+      const list = await readJson<ChatSeen[]>("chat-presence.json", []);
+      const ex = list.find((p) => p.email === e);
+      if (ex) ex.chatSeenAt = now;
+      else list.push({ email: e, chatSeenAt: now });
+      await writeJson("chat-presence.json", list);
+    },
+  );
+}
+
+// Chat-area last-seen for a set of members, as { email -> chatSeenAt ISO }.
+// Powers the online/last-seen status in the chat contact list.
+export async function chatPresenceFor(
+  emails: string[],
+): Promise<Record<string, string>> {
+  const uniq = Array.from(new Set(emails.map(lc).filter(Boolean)));
+  if (uniq.length === 0) return {};
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("chat_presence")
+        .select("email,chat_seen_at")
+        .in("email", uniq);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const r of data ?? []) map[r.email] = r.chat_seen_at;
+      return map;
+    },
+    async () => {
+      const list = await readJson<ChatSeen[]>("chat-presence.json", []);
+      const set = new Set(uniq);
+      const map: Record<string, string> = {};
+      for (const p of list) if (set.has(p.email)) map[p.email] = p.chatSeenAt;
+      return map;
+    },
+  );
+}
+
+// Last-seen timestamps for a set of members, as { email -> lastSeenAt ISO }.
+// Used to show online/last-seen status next to chat contacts.
+export async function presenceFor(
+  emails: string[],
+): Promise<Record<string, string>> {
+  const uniq = Array.from(new Set(emails.map(lc).filter(Boolean)));
+  if (uniq.length === 0) return {};
+  return store(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("presence")
+        .select("email,last_seen_at")
+        .in("email", uniq);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const r of data ?? []) map[r.email] = r.last_seen_at;
+      return map;
+    },
+    async () => {
+      const list = await readJson<Presence[]>("presence.json", []);
+      const set = new Set(uniq);
+      const map: Record<string, string> = {};
+      for (const p of list) if (set.has(p.email)) map[p.email] = p.lastSeenAt;
+      return map;
     },
   );
 }

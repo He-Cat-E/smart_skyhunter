@@ -5,8 +5,13 @@ import {
   conversationsAll,
   conversationReads,
   unreadCount,
+  chatPresenceFor,
 } from "@/lib/store";
 import { anyoneTyping } from "@/lib/typing";
+
+// "Online" in the contact list means active in the chat area recently. The chat
+// beacon ticks every 30s, so a 90s window tolerates a missed beat.
+const ONLINE_WINDOW_MS = 90 * 1000;
 
 export const runtime = "nodejs";
 
@@ -23,6 +28,18 @@ export async function GET() {
     : await conversationsForUser(user.email);
 
   const reads = await conversationReads(me);
+
+  // Whose online status to show on each row: the contract peer, or (for an
+  // admin) the member in a support chat. Members viewing "SkyHunter Support"
+  // have no single peer, so no status.
+  const statusEmailFor = (c: (typeof convs)[number]): string | null => {
+    if (c.kind === "contract") return c.participants.find((p) => p !== me) ?? null;
+    return admin ? (c.participants[0] ?? null) : null;
+  };
+  const presence = await chatPresenceFor(
+    convs.map(statusEmailFor).filter((e): e is string => !!e),
+  ).catch(() => ({}) as Record<string, string>);
+  const now = Date.now();
 
   const conversations = await Promise.all(
     convs.map(async (c) => {
@@ -45,6 +62,10 @@ export async function GET() {
       // Contract peer's email — lets the list avatar open their profile.
       const peerEmail =
         c.kind === "contract" ? (c.participants.find((p) => p !== me) ?? null) : null;
+      const statusEmail = statusEmailFor(c);
+      const lastSeenAt = statusEmail ? (presence[statusEmail] ?? null) : null;
+      const online =
+        !!lastSeenAt && now - new Date(lastSeenAt).getTime() < ONLINE_WINDOW_MS;
       return {
         id: c.id,
         kind: c.kind,
@@ -56,6 +77,8 @@ export async function GET() {
         typing: anyoneTyping(c.id, me),
         peerEmail,
         unread: await unreadCount(c.id, me, reads[c.id]),
+        online,
+        lastSeenAt,
       };
     }),
   );

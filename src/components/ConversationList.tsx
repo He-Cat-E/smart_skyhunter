@@ -16,6 +16,8 @@ type Conv = {
   peerEmail?: string | null;
   unread?: number;
   avatarUrl?: string;
+  online?: boolean;
+  lastSeenAt?: string | null;
 };
 
 const AVATAR_COLORS = [
@@ -39,6 +41,19 @@ function whenLabel(iso: string): string {
   return d.toDateString() === now.toDateString()
     ? d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
     : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function lastSeenLabel(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (isNaN(then)) return "";
+  const mins = Math.floor((Date.now() - then) / 60000);
+  if (mins < 1) return "last seen just now";
+  if (mins < 60) return `last seen ${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `last seen ${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `last seen ${days}d ago`;
+  return `last seen ${new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
 
 export function ConversationList() {
@@ -128,44 +143,52 @@ export function ConversationList() {
                   active ? "bg-blue-500/10" : "hover:bg-navy-soft"
                 }`}
               >
-                <span
-                  role={c.peerEmail ? "button" : undefined}
-                  tabIndex={c.peerEmail ? 0 : undefined}
-                  title={c.peerEmail ? `View ${c.display}'s profile` : undefined}
-                  onClick={
-                    c.peerEmail
-                      ? (e) => {
-                          // Open the profile instead of navigating into the chat.
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setProfileEmail(c.peerEmail ?? null);
-                        }
-                      : undefined
-                  }
-                  onKeyDown={
-                    c.peerEmail
-                      ? (e) => {
-                          if (e.key === "Enter" || e.key === " ") {
+                <div className="relative shrink-0">
+                  <span
+                    role={c.peerEmail ? "button" : undefined}
+                    tabIndex={c.peerEmail ? 0 : undefined}
+                    title={c.peerEmail ? `View ${c.display}'s profile` : undefined}
+                    onClick={
+                      c.peerEmail
+                        ? (e) => {
+                            // Open the profile instead of navigating into the chat.
                             e.preventDefault();
                             e.stopPropagation();
                             setProfileEmail(c.peerEmail ?? null);
                           }
-                        }
-                      : undefined
-                  }
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-semibold text-white ${c.avatarUrl ? "bg-steel" : colorFor(c.id)} ${c.peerEmail ? "cursor-pointer transition-opacity hover:opacity-80" : ""}`}
-                >
-                  {c.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={c.avatarUrl}
-                      alt=""
-                      className="h-full w-full object-cover"
+                        : undefined
+                    }
+                    onKeyDown={
+                      c.peerEmail
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setProfileEmail(c.peerEmail ?? null);
+                            }
+                          }
+                        : undefined
+                    }
+                    className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-full text-base font-semibold text-white ${c.avatarUrl ? "bg-steel" : colorFor(c.id)} ${c.peerEmail ? "cursor-pointer transition-opacity hover:opacity-80" : ""}`}
+                  >
+                    {c.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={c.avatarUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      c.display.slice(0, 1).toUpperCase()
+                    )}
+                  </span>
+                  {c.online && (
+                    <span
+                      aria-label="Online"
+                      className="pointer-events-none absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-green-500 ring-2 ring-void"
                     />
-                  ) : (
-                    c.display.slice(0, 1).toUpperCase()
                   )}
-                </span>
+                </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <p
@@ -211,6 +234,16 @@ export function ConversationList() {
                       </span>
                     )}
                   </div>
+                  {c.online ? (
+                    <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-green-600">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      online
+                    </p>
+                  ) : c.lastSeenAt ? (
+                    <p className="mt-0.5 truncate text-xs text-faint">
+                      {lastSeenLabel(c.lastSeenAt)}
+                    </p>
+                  ) : null}
                 </div>
               </Link>
             );

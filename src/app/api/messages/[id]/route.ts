@@ -205,7 +205,8 @@ export async function DELETE(
     return NextResponse.json({ ok: false, error: "No message." }, { status: 400 });
   }
 
-  const ok = await messageDelete(conv.id, messageId, me, admin);
+  // Everyone — admins included — can delete only their own messages.
+  const ok = await messageDelete(conv.id, messageId, me, false);
   if (!ok) {
     return NextResponse.json(
       { ok: false, error: "You can only delete your own message." },

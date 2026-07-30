@@ -146,8 +146,8 @@ create table if not exists public.stat_events (
 );
 create index if not exists stat_events_created_idx on public.stat_events (created_at);
 
--- Online presence: heartbeats from signed-in users. "Online" = a recent
--- last_seen_at. One row per member, upserted on each heartbeat.
+-- Online presence: heartbeats from signed-in users on ANY page. "Online" = a
+-- recent last_seen_at. Powers the admin Analytics "online now" list.
 create table if not exists public.presence (
   email        text primary key,
   name         text not null default '',
@@ -155,8 +155,17 @@ create table if not exists public.presence (
 );
 create index if not exists presence_seen_idx on public.presence (last_seen_at);
 
+-- Chat presence: heartbeats sent ONLY while a member is in the Messages area.
+-- Drives the online/last-seen status shown in the chat contact list, so someone
+-- browsing elsewhere on the site doesn't read as "online" in a chat.
+create table if not exists public.chat_presence (
+  email        text primary key,
+  chat_seen_at timestamptz not null default now()
+);
+
 alter table public.stat_events     enable row level security;
 alter table public.presence        enable row level security;
+alter table public.chat_presence   enable row level security;
 alter table public.users           enable row level security;
 alter table public.pending_signups enable row level security;
 alter table public.registrations   enable row level security;
