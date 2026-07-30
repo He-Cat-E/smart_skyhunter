@@ -130,6 +130,17 @@ export async function GET(
         body: `${user.name} (${user.email}) signed up with ${cfg.label}.`,
       });
     } else {
+      // Account linking: an account with this (verified) email already exists,
+      // so record that they've now connected this OAuth provider. Only write
+      // when it's actually new, to avoid a needless update on every sign-in.
+      const conns = new Set(user.profile.connections ?? []);
+      if (!conns.has(provider)) {
+        conns.add(provider);
+        const updated = await updateUser(user.email, {
+          profile: { connections: [...conns] },
+        });
+        if (updated) user = updated;
+      }
       await notifyUser(user.email, {
         type: "signin",
         title: "New sign-in",

@@ -98,6 +98,19 @@ export default async function ProfilePage({
             <span className="rounded-md bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-300 ring-1 ring-blue-500/25">
               {signedUpWith}
             </span>
+            {connections
+              .filter(
+                (c) =>
+                  (c === "google" || c === "linkedin") && c !== user.provider,
+              )
+              .map((c) => (
+                <span
+                  key={c}
+                  className="rounded-md bg-cyan/10 px-2.5 py-1 text-xs font-medium text-cyan ring-1 ring-cyan/30"
+                >
+                  {providerLabel[c] ?? c} connected
+                </span>
+              ))}
             <span className="rounded-md bg-steel px-2.5 py-1 text-xs font-medium text-mist">
               Since {memberSince}
             </span>
