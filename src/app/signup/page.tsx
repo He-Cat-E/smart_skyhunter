@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SignUpForm } from "@/components/SignUpForm";
 import { Check } from "@/components/icons";
+import { providerConfigured } from "@/lib/oauth";
 
 export const metadata: Metadata = {
   title: "Sign up · SkyHunter",
@@ -72,7 +73,10 @@ export default function SignUpPage() {
 
         <div className="lift rounded-2xl border border-steel-line bg-void p-6 sm:p-8">
           <Suspense fallback={<div className="h-96" />}>
-            <SignUpForm />
+            <SignUpForm
+              google={providerConfigured("google")}
+              linkedin={providerConfigured("linkedin")}
+            />
           </Suspense>
         </div>
       </div>

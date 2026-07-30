@@ -1,10 +1,9 @@
 "use client";
 
-import { IS_DEV } from "@/lib/flags";
-
-// "Continue with Google / LinkedIn" buttons. They link to the OAuth start
-// routes; if a provider isn't configured yet, the start route bounces back to
-// /signin with a friendly message. Hidden entirely in local dev.
+// "Continue with Google / LinkedIn" buttons. Each button is shown only when its
+// provider is actually configured (keys set) — the server passes those flags in
+// — so an unconfigured provider never appears (no "Google isn't configured yet"
+// dead-end). If neither is configured, nothing renders.
 
 function GoogleMark() {
   return (
@@ -31,25 +30,33 @@ function LinkedInMark() {
 
 export function OAuthButtons({
   action = "Continue",
+  google = false,
+  linkedin = false,
 }: {
   action?: "Continue" | "Sign in" | "Sign up";
+  google?: boolean;
+  linkedin?: boolean;
 }) {
-  // No domain / OAuth apps in local dev — hide social login.
-  if (IS_DEV) return null;
+  // Nothing to show if no provider is set up — skip the divider entirely.
+  if (!google && !linkedin) return null;
 
   const btn =
     "flex w-full items-center justify-center gap-3 rounded-xl border border-steel-line bg-void px-4 py-3 text-sm font-semibold text-chrome transition-colors hover:bg-abyss";
 
   return (
     <div className="space-y-3">
-      <a href="/api/auth/oauth/google/start" className={btn}>
-        <GoogleMark />
-        {action} with Google
-      </a>
-      <a href="/api/auth/oauth/linkedin/start" className={btn}>
-        <LinkedInMark />
-        {action} with LinkedIn
-      </a>
+      {google && (
+        <a href="/api/auth/oauth/google/start" className={btn}>
+          <GoogleMark />
+          {action} with Google
+        </a>
+      )}
+      {linkedin && (
+        <a href="/api/auth/oauth/linkedin/start" className={btn}>
+          <LinkedInMark />
+          {action} with LinkedIn
+        </a>
+      )}
       <div className="flex items-center gap-3 pt-1">
         <span className="h-px flex-1 bg-steel-line" />
         <span className="text-xs text-fog">or with email</span>

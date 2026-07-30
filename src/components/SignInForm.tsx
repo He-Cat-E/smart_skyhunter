@@ -9,7 +9,13 @@ import { OAuthButtons } from "./OAuthButtons";
 
 type Status = "idle" | "submitting" | "error";
 
-export function SignInForm() {
+export function SignInForm({
+  google = false,
+  linkedin = false,
+}: {
+  google?: boolean;
+  linkedin?: boolean;
+}) {
   const router = useRouter();
   const params = useSearchParams();
   const { refresh } = useAuth();
@@ -78,7 +84,7 @@ export function SignInForm() {
         </p>
       )}
 
-      <OAuthButtons action="Sign in" />
+      <OAuthButtons action="Sign in" google={google} linkedin={linkedin} />
 
       <Honeypot />
 

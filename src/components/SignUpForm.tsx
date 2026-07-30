@@ -68,7 +68,13 @@ const inputClass =
   "w-full rounded-xl border border-steel-line bg-void px-4 py-3 text-chrome outline-none transition-colors placeholder:text-faint focus:border-blue-500 focus:ring-1 focus:ring-blue-500";
 const labelClass = "mb-1.5 block text-sm font-medium text-mist";
 
-export function SignUpForm() {
+export function SignUpForm({
+  google = false,
+  linkedin = false,
+}: {
+  google?: boolean;
+  linkedin?: boolean;
+}) {
   const params = useSearchParams();
   const router = useRouter();
   const { refresh } = useAuth();
@@ -312,7 +318,7 @@ export function SignUpForm() {
         </p>
       </div>
 
-      <OAuthButtons action="Sign up" />
+      <OAuthButtons action="Sign up" google={google} linkedin={linkedin} />
 
       <div className="space-y-4">
         <div>
