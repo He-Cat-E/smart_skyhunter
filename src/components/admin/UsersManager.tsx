@@ -54,6 +54,8 @@ function colorFor(s: string): string {
   for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return AVATAR_COLORS[h % AVATAR_COLORS.length];
 }
+type SortKey = "name" | "createdAt" | "provider" | "industry";
+
 function initials(name: string, email: string): string {
   const base = name?.trim() || email;
   return (
@@ -78,6 +80,18 @@ export function UsersManager({
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [selected, setSelected] = useState<AdminUser | null>(null);
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({
+    key: "createdAt",
+    dir: "desc",
+  });
+
+  function toggleSort(key: SortKey) {
+    setSort((s) =>
+      s.key === key
+        ? { key, dir: s.dir === "asc" ? "desc" : "asc" }
+        : { key, dir: key === "createdAt" ? "desc" : "asc" },
+    );
+  }
 
   const filtered = users.filter((u) =>
     `${u.name} ${u.email} ${u.industry} ${u.location} ${u.signupLocation ?? ""} ${u.isp ?? ""} ${u.signupIp ?? ""}${u.vpn ? " vpn" : ""}${u.vps ? " vps" : ""}`
@@ -86,6 +100,42 @@ export function UsersManager({
   );
 
   const flaggedCount = users.filter((u) => u.vpn || u.vps).length;
+
+  const sorted = [...filtered].sort((a, b) => {
+    const dir = sort.dir === "asc" ? 1 : -1;
+    if (sort.key === "createdAt") {
+      return (
+        (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * dir
+      );
+    }
+    const val = (u: AdminUser) =>
+      sort.key === "name"
+        ? u.name
+        : sort.key === "provider"
+          ? (u.provider ?? "Email")
+          : u.industry;
+    return val(a).localeCompare(val(b)) * dir;
+  });
+
+  const arrow = (k: SortKey) =>
+    sort.key === k ? (sort.dir === "asc" ? "▲" : "▼") : "↕";
+
+  const head = (label: string, k: SortKey) => (
+    <th className="px-4 py-3 font-semibold">
+      <button
+        type="button"
+        onClick={() => toggleSort(k)}
+        className="inline-flex items-center gap-1 uppercase tracking-wider transition-colors hover:text-chrome"
+      >
+        {label}
+        <span
+          className={`text-[0.6rem] ${sort.key === k ? "text-blue-300" : "text-faint/60"}`}
+        >
+          {arrow(k)}
+        </span>
+      </button>
+    </th>
+  );
 
   async function toggleAdmin(u: AdminUser) {
     setBusy(u.email);
@@ -164,16 +214,16 @@ export function UsersManager({
         <table className="w-full min-w-[860px] text-left text-sm">
           <thead className="bg-navy text-xs uppercase tracking-wider text-fog">
             <tr>
-              <th className="px-4 py-3 font-semibold">User</th>
-              <th className="px-4 py-3 font-semibold">Signed up</th>
+              {head("User", "name")}
+              {head("Signed up", "createdAt")}
               <th className="px-4 py-3 font-semibold">Location &amp; network</th>
-              <th className="px-4 py-3 font-semibold">Via</th>
-              <th className="px-4 py-3 font-semibold">Role</th>
+              {head("Via", "provider")}
+              {head("Role", "industry")}
               <th className="px-4 py-3 text-right font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-steel-line">
-            {filtered.map((u) => (
+            {sorted.map((u) => (
               <tr
                 key={u.email}
                 onClick={() => setSelected(u)}
