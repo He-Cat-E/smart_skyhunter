@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getJobById, listJobs } from "@/lib/jobs-data";
+import { notFound, redirect } from "next/navigation";
+import { getJobById } from "@/lib/jobs-data";
+import { getSession } from "@/lib/auth";
 import { JOB_STATUS_STYLE, isJobOpen } from "@/lib/jobs";
 import { ApplyButton } from "@/components/ApplyButton";
 import { AuthSwitch } from "@/components/AuthSwitch";
 
-// Static per-role pages, refreshed at most every 10 min; admin job edits bust
-// them via revalidateTag("jobs"). The apply widget resolves sign-in state on
-// the client. Roles added after build still render on-demand (dynamicParams).
-export const revalidate = 600;
-
-export async function generateStaticParams() {
-  return (await listJobs()).map((job) => ({ id: job.id }));
-}
+// Role detail is gated behind sign-up: viewing a specific role requires an
+// account, so this renders on demand (reads the session cookie) rather than as
+// a static page.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -34,6 +31,10 @@ export default async function JobDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // Viewing a role requires an account — send signed-out visitors to sign up.
+  const session = await getSession();
+  if (!session) redirect("/signup");
+
   const { id } = await params;
   const job = await getJobById(id);
   if (!job) notFound();

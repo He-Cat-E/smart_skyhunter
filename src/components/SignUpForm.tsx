@@ -13,22 +13,6 @@ import { isStrongPassword } from "@/lib/password";
 import { IS_DEV } from "@/lib/flags";
 import { Spinner, Check } from "@/components/icons";
 
-// Two-segment progress bar for the signup → verify flow.
-function StepBar({ step }: { step: 1 | 2 }) {
-  return (
-    <div
-      className="flex items-center gap-1.5"
-      role="img"
-      aria-label={`Step ${step} of 2`}
-    >
-      <span className="h-1.5 w-7 rounded-full bg-blue-500" />
-      <span
-        className={`h-1.5 w-7 rounded-full ${step >= 2 ? "bg-blue-500" : "bg-steel-line"}`}
-      />
-    </div>
-  );
-}
-
 // Labeled group with a hairline, so the long form reads as digestible sections.
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -228,13 +212,7 @@ export function SignUpForm() {
     return (
       <form onSubmit={handleVerify} className="space-y-5">
         <div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-xs font-semibold uppercase tracking-wider text-fog">
-              Step 2 of 2
-            </span>
-            <StepBar step={2} />
-          </div>
-          <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-chrome">
+          <h2 className="font-display text-2xl font-semibold tracking-tight text-chrome">
             Check your email
           </h2>
           <p className="mt-1 text-sm text-fog">
@@ -323,13 +301,7 @@ export function SignUpForm() {
   return (
     <form onSubmit={handleDetails} className="space-y-5">
       <div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-xs font-semibold uppercase tracking-wider text-fog">
-            Step 1 of 2
-          </span>
-          <StepBar step={1} />
-        </div>
-        <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-chrome">
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-chrome">
           Create your account
         </h2>
         <p className="mt-1 text-sm text-fog">

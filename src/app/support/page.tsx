@@ -2,10 +2,6 @@ import type { Metadata } from "next";
 import { RESOURCES as SEED_RESOURCES } from "@/lib/content";
 import { collectionGet } from "@/lib/cache";
 import { Reveal } from "@/components/Reveal";
-import { Telegram, ArrowRight } from "@/components/icons";
-
-// Company help/community channel.
-const TELEGRAM_URL = "https://t.me/+SNHbY6Ky4XxiMTNi";
 
 // Static HTML, refreshed at most every 10 min. Admin edits publish instantly
 // via revalidateTag("content"), which busts this route's cached data reads too.
@@ -59,33 +55,6 @@ export default async function SupportPage() {
           Call, text, or chat 988
         </a>
       </div>
-
-      {/* Live help via our Telegram channel */}
-      <a
-        href={TELEGRAM_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group mt-6 flex flex-col items-start gap-5 rounded-2xl border border-[#229ED9]/40 bg-[#229ED9]/5 p-6 transition-all hover:-translate-y-0.5 hover:border-[#229ED9]/70 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div className="flex items-center gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#229ED9] text-white shadow-sm">
-            <Telegram className="h-6 w-6" />
-          </span>
-          <div>
-            <p className="font-display text-xl font-bold text-chrome">
-              Need a hand? Talk to our team on Telegram
-            </p>
-            <p className="mt-1 text-sm text-mist">
-              Join our channel for quick answers, guidance, and support from real
-              people — you&apos;ll never be left on read.
-            </p>
-          </div>
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#229ED9] px-6 py-3 font-semibold text-white transition-colors group-hover:bg-[#1c8dc0]">
-          Open our Telegram
-          <ArrowRight className="h-4 w-4" />
-        </span>
-      </a>
 
       <div className="mt-10 grid gap-5 md:grid-cols-2">
         {support.map((r, i) => (
