@@ -23,15 +23,35 @@ export default async function AdminUsersPage() {
         signups={signups}
         users={users.map((u) => {
           const s = u.profile?.signup;
+          const p = u.profile ?? {};
           return {
             email: u.email,
             name: u.name,
             provider: u.provider,
             is_admin: !!u.is_admin,
             suspended: !!u.profile?.suspended,
+            suspendedReason: p.suspendedReason ?? "",
+            suspendedAt: p.suspendedAt ?? "",
             createdAt: u.createdAt,
-            industry: u.profile?.industry ?? "",
-            location: u.profile?.location ?? "",
+            industry: p.industry ?? "",
+            location: p.location ?? "",
+            // Full profile — shown in the row-click detail dialog.
+            avatarUrl: p.avatarUrl ?? "",
+            headline: p.headline ?? "",
+            summary: p.summary ?? "",
+            skills: p.skills ?? [],
+            previousRole: p.previousRole ?? "",
+            desiredRole: p.desiredRole ?? "",
+            situation: p.situation ?? "",
+            experienceYears: p.experienceYears ?? "",
+            availability: p.availability ?? "",
+            workPreference: p.workPreference ?? "",
+            desiredSalary: p.desiredSalary ?? "",
+            phone: p.phone ?? "",
+            website: p.website ?? "",
+            linkedinUrl: p.linkedinUrl ?? "",
+            githubUrl: p.githubUrl ?? "",
+            connections: p.connections ?? [],
             signupLocation: signupLocationLabel(s),
             signupIp: s?.ip ?? "",
             isp: s?.isp ?? "",

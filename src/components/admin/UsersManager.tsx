@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { UserDetailDialog } from "./UserDetailDialog";
 
 export type AdminUser = {
   email: string;
@@ -9,9 +10,28 @@ export type AdminUser = {
   provider?: string;
   is_admin?: boolean;
   suspended?: boolean;
+  suspendedReason?: string;
+  suspendedAt?: string;
   createdAt: string;
   industry: string;
   location: string;
+  // Full profile — shown in the row-click detail dialog.
+  avatarUrl?: string;
+  headline?: string;
+  summary?: string;
+  skills?: string[];
+  previousRole?: string;
+  desiredRole?: string;
+  situation?: string;
+  experienceYears?: string;
+  availability?: string;
+  workPreference?: string;
+  desiredSalary?: string;
+  phone?: string;
+  website?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  connections?: string[];
   // Signup IP intelligence (admin-only)
   signupLocation?: string; // geo-derived "City, Region, Country"
   signupIp?: string;
@@ -31,6 +51,7 @@ export function UsersManager({
   const router = useRouter();
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [selected, setSelected] = useState<AdminUser | null>(null);
 
   const filtered = users.filter((u) =>
     `${u.name} ${u.email} ${u.industry} ${u.location} ${u.signupLocation ?? ""} ${u.isp ?? ""} ${u.signupIp ?? ""}${u.vpn ? " vpn" : ""}${u.vps ? " vps" : ""}`
@@ -129,7 +150,9 @@ export function UsersManager({
             {filtered.map((u) => (
               <tr
                 key={u.email}
-                className={u.suspended ? "bg-red-50/60" : "bg-void/40"}
+                onClick={() => setSelected(u)}
+                title="View full details"
+                className={`cursor-pointer transition-colors ${u.suspended ? "bg-red-50/60 hover:bg-red-50" : "bg-void/40 hover:bg-abyss"}`}
               >
                 <td className="px-4 py-3">
                   <div className="font-medium text-chrome">
@@ -191,7 +214,7 @@ export function UsersManager({
                   {u.provider ?? "Email"}
                 </td>
                 <td className="px-4 py-3 text-mist">{u.industry || "—"}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => toggleAdmin(u)}
@@ -241,6 +264,10 @@ export function UsersManager({
           </tbody>
         </table>
       </div>
+
+      {selected && (
+        <UserDetailDialog user={selected} onClose={() => setSelected(null)} />
+      )}
     </div>
   );
 }
