@@ -41,6 +41,32 @@ export type AdminUser = {
   ipChecked?: boolean; // the intel lookup actually ran
 };
 
+const AVATAR_COLORS = [
+  "bg-[#8710d8]",
+  "bg-[#2aa79b]",
+  "bg-[#e17076]",
+  "bg-[#3c8ce7]",
+  "bg-[#e6a04c]",
+  "bg-[#6bc86b]",
+];
+function colorFor(s: string): string {
+  let h = 0;
+  for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+function initials(name: string, email: string): string {
+  const base = name?.trim() || email;
+  return (
+    base
+      .split(/[\s@.]+/)
+      .map((p) => p[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "U"
+  );
+}
+
 export function UsersManager({
   users,
   currentEmail,
@@ -155,20 +181,38 @@ export function UsersManager({
                 className={`cursor-pointer transition-colors ${u.suspended ? "bg-red-50/60 hover:bg-red-50" : "bg-void/40 hover:bg-abyss"}`}
               >
                 <td className="px-4 py-3">
-                  <div className="font-medium text-chrome">
-                    {u.name}
-                    {u.is_admin && (
-                      <span className="ml-2 rounded bg-blue-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-blue-300 ring-1 ring-blue-500/25">
-                        ADMIN
-                      </span>
-                    )}
-                    {u.suspended && (
-                      <span className="ml-2 rounded bg-red-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-red-600 ring-1 ring-red-500/25">
-                        SUSPENDED
-                      </span>
-                    )}
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-semibold text-white ${u.avatarUrl ? "bg-steel" : colorFor(u.email)}`}
+                    >
+                      {u.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={u.avatarUrl}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        initials(u.name, u.email)
+                      )}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-medium text-chrome">
+                        {u.name}
+                        {u.is_admin && (
+                          <span className="ml-2 rounded bg-blue-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-blue-300 ring-1 ring-blue-500/25">
+                            ADMIN
+                          </span>
+                        )}
+                        {u.suspended && (
+                          <span className="ml-2 rounded bg-red-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-red-600 ring-1 ring-red-500/25">
+                            SUSPENDED
+                          </span>
+                        )}
+                      </div>
+                      <div className="truncate text-xs text-fog">{u.email}</div>
+                    </div>
                   </div>
-                  <div className="text-xs text-fog">{u.email}</div>
                 </td>
                 <td className="px-4 py-3 text-fog">
                   {new Date(u.createdAt).toLocaleDateString("en-US", {
