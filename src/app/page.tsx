@@ -3,6 +3,7 @@ import Image from "next/image";
 import { listJobs } from "@/lib/jobs-data";
 import { STEPS as SEED_STEPS, STORIES as SEED_STORIES } from "@/lib/content";
 import { collectionGet } from "@/lib/cache";
+import { COMPANY_BLUR } from "@/lib/company-blur";
 import { JobCard } from "@/components/JobCard";
 import { Reveal } from "@/components/Reveal";
 import { AuthSwitch } from "@/components/AuthSwitch";
@@ -144,12 +145,14 @@ export default async function HomePage() {
           </div>
 
           {/* Our company photo */}
-          <div className="rise-in relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-steel-line">
+          <div className="rise-in relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-steel-line bg-steel">
             <Image
               src="/company/company.jpg"
               alt="The SkyHunter team collaborating in the office"
               fill
               priority
+              placeholder="blur"
+              blurDataURL={COMPANY_BLUR}
               sizes="(max-width: 1024px) 100vw, 45vw"
               className="object-cover"
             />
