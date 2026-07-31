@@ -10,6 +10,10 @@ export const metadata: Metadata = {
     "Create your SkyHunter account. Join the community connecting talented people with new opportunities in the AI era.",
 };
 
+// Rendered per-request so the Google/LinkedIn buttons reflect the CURRENT env
+// (they show as soon as the provider keys are set — no rebuild needed).
+export const dynamic = "force-dynamic";
+
 const PERKS = [
   "First access to the full job board on launch day",
   "Free, vetted reskilling paths matched to your background",

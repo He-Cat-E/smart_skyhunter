@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   description: "Sign in to your SkyHunter account.",
 };
 
+// Rendered per-request so the Google/LinkedIn buttons reflect the CURRENT env
+// (they show as soon as the provider keys are set — no rebuild needed).
+export const dynamic = "force-dynamic";
+
 export default function SignInPage() {
   return (
     <section className="bg-sky-art">
