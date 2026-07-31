@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Spinner, Check, ArrowRight } from "@/components/icons";
@@ -54,6 +54,30 @@ export function ContractsManager({
   const [title, setTitle] = useState("");
   const [err, setErr] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Who each member is already contracted with, so the pickers can hide anyone
+  // who'd form an already-existing pair with the other selection.
+  const contractedWith = useMemo(() => {
+    const map: Record<string, Set<string>> = {};
+    for (const c of contracts) {
+      const ea = c.memberA.email.toLowerCase();
+      const eb = c.memberB.email.toLowerCase();
+      (map[ea] ??= new Set()).add(eb);
+      (map[eb] ??= new Set()).add(ea);
+    }
+    return map;
+  }, [contracts]);
+
+  const availableExcept = (other: string) => {
+    const o = other.toLowerCase();
+    return members.filter(
+      (m) =>
+        m.email.toLowerCase() !== o &&
+        !contractedWith[m.email.toLowerCase()]?.has(o),
+    );
+  };
+  const membersForA = b ? availableExcept(b) : members;
+  const membersForB = a ? availableExcept(a) : members;
 
   function openMatch() {
     setA("");
@@ -244,17 +268,13 @@ export function ContractsManager({
                 <label className="mb-1.5 block text-sm font-medium text-mist">
                   First member
                 </label>
-                <MemberPicker members={members} value={a} onChange={setA} />
+                <MemberPicker members={membersForA} value={a} onChange={setA} />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-mist">
                   Second member
                 </label>
-                <MemberPicker
-                  members={members.filter((m) => m.email !== a)}
-                  value={b}
-                  onChange={setB}
-                />
+                <MemberPicker members={membersForB} value={b} onChange={setB} />
               </div>
               <div>
                 <label
