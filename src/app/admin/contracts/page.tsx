@@ -15,6 +15,10 @@ export default async function AdminContractsPage() {
     chatTablesReady(),
   ]);
   const raw = all.filter((c) => c.kind === "contract");
+  // Members already in a contract can't be matched again until it's closed.
+  const contracted = new Set(
+    raw.flatMap((c) => c.participants.map((p) => p.toLowerCase())),
+  );
 
   const contracts: ContractRow[] = await Promise.all(
     raw.map(async (c) => {
@@ -36,7 +40,9 @@ export default async function AdminContractsPage() {
   );
 
   const members = users
-    .filter((u) => !u.profile?.suspended)
+    .filter(
+      (u) => !u.profile?.suspended && !contracted.has(u.email.toLowerCase()),
+    )
     .map((u) => ({ email: u.email, name: u.name }));
 
   return (
