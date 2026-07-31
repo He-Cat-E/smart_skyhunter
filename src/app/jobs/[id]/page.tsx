@@ -6,6 +6,13 @@ import { getSession } from "@/lib/auth";
 import { JOB_STATUS_STYLE, isJobOpen } from "@/lib/jobs";
 import { ApplyButton } from "@/components/ApplyButton";
 import { AuthSwitch } from "@/components/AuthSwitch";
+import { SITE_URL } from "@/lib/site";
+
+const EMPLOYMENT_TYPE: Record<string, string> = {
+  "Full-time": "FULL_TIME",
+  "Part-time": "PART_TIME",
+  Contract: "CONTRACTOR",
+};
 
 // Role detail is gated behind sign-up: viewing a specific role requires an
 // account, so this renders on demand (reads the session cookie) rather than as
@@ -39,7 +46,56 @@ export default async function JobDetailPage({
   const job = await getJobById(id);
   if (!job) notFound();
 
+  // JobPosting structured data — powers Google Jobs / rich results.
+  const remote = job.mode === "Remote";
+  const datePosted = new Date(
+    Date.now() - (job.postedDaysAgo || 0) * 86400000,
+  ).toISOString();
+  const jobLd = {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title: job.title,
+    description: [job.summary, job.humanEdge, ...(job.responsibilities ?? [])]
+      .filter(Boolean)
+      .join(" "),
+    datePosted,
+    validThrough: isJobOpen(job.status)
+      ? new Date(Date.now() + 45 * 86400000).toISOString()
+      : undefined,
+    employmentType: EMPLOYMENT_TYPE[job.type] ?? "OTHER",
+    hiringOrganization: {
+      "@type": "Organization",
+      name: job.company,
+    },
+    identifier: {
+      "@type": "PropertyValue",
+      name: job.company,
+      value: job.id,
+    },
+    url: `${SITE_URL}/jobs/${job.id}`,
+    ...(remote
+      ? {
+          jobLocationType: "TELECOMMUTE",
+          applicantLocationRequirements: { "@type": "Country", name: "US" },
+        }
+      : {
+          jobLocation: {
+            "@type": "Place",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: job.location,
+              addressCountry: "US",
+            },
+          },
+        }),
+  };
+
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jobLd) }}
+      />
     <article className="mx-auto max-w-3xl px-5 py-14">
       <Link
         href="/jobs"
@@ -144,5 +200,6 @@ export default async function JobDetailPage({
         )}
       </div>
     </article>
+    </>
   );
 }

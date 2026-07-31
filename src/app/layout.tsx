@@ -7,6 +7,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { ChatNotifier } from "@/components/ChatNotifier";
 import { VisitTracker } from "@/components/VisitTracker";
 import { PresenceBeacon } from "@/components/PresenceBeacon";
+import { SITE_URL, SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from "@/lib/site";
 
 // Variable fonts: omitting `weight` loads a single variable file that covers
 // every weight we use (Tailwind's medium→extrabold), instead of one static
@@ -28,16 +29,52 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "SkyHunter — Build. Innovate. Elevate.",
-  description:
-    "SkyHunter is launching soon: the elevated job platform for people ready to rise above the AI shakeup. Sign up now for early access.",
+  metadataBase: new URL(SITE_URL),
+  // Pages set their own full "<Page> · SkyHunter" title; this is the fallback
+  // for any page that doesn't (e.g. the home page).
+  title: `${SITE_NAME} — ${SITE_TAGLINE}: jobs for people displaced by AI`,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
   keywords: [
     "SkyHunter",
+    "jobs after AI",
     "AI job loss",
+    "AI displacement jobs",
     "career reinvention",
-    "early access",
+    "reskilling",
+    "human-first jobs",
     "job platform",
+    "remote jobs",
+    "career change",
   ],
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    url: SITE_URL,
+    locale: "en_US",
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  category: "career",
 };
 
 export default function RootLayout({
@@ -52,6 +89,30 @@ export default function RootLayout({
       className={`${sora.variable} ${manrope.variable}`}
     >
       <body className="min-h-screen antialiased">
+        {/* Structured data: helps Google understand the brand + site. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: SITE_NAME,
+                url: SITE_URL,
+                logo: `${SITE_URL}/icon.svg`,
+                description: SITE_DESCRIPTION,
+                slogan: SITE_TAGLINE,
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: SITE_NAME,
+                url: SITE_URL,
+                description: SITE_DESCRIPTION,
+              },
+            ]),
+          }}
+        />
         {/* Set the theme before first paint so there's no light/dark flash.
             Reads the saved choice, else falls back to the OS preference. */}
         <script
