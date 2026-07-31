@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { getJobById } from "@/lib/jobs-data";
-import { getSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import { getJobById, listJobs } from "@/lib/jobs-data";
 import { JOB_STATUS_STYLE, isJobOpen } from "@/lib/jobs";
 import { ApplyButton } from "@/components/ApplyButton";
 import { AuthSwitch } from "@/components/AuthSwitch";
@@ -14,10 +13,14 @@ const EMPLOYMENT_TYPE: Record<string, string> = {
   Contract: "CONTRACTOR",
 };
 
-// Role detail is gated behind sign-up: viewing a specific role requires an
-// account, so this renders on demand (reads the session cookie) rather than as
-// a static page.
-export const dynamic = "force-dynamic";
+// Public, statically generated role pages — best for SEO (crawlable + Google
+// Jobs rich results) and speed. Refreshed at most every 10 min; admin edits
+// bust them via revalidateTag("jobs"). Roles added after build render on demand.
+export const revalidate = 600;
+
+export async function generateStaticParams() {
+  return (await listJobs()).map((job) => ({ id: job.id }));
+}
 
 export async function generateMetadata({
   params,
@@ -38,10 +41,6 @@ export default async function JobDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // Viewing a role requires an account — send signed-out visitors to sign up.
-  const session = await getSession();
-  if (!session) redirect("/signup");
-
   const { id } = await params;
   const job = await getJobById(id);
   if (!job) notFound();
