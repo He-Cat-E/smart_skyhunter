@@ -237,8 +237,7 @@ export function ContractsManager({
             </h3>
             <p className="mt-1 text-sm text-fog">
               Open a private real-time chat between two members for a contract.
-              Both are notified in-app and by email. Only members not already in
-              a contract are shown.
+              Both are notified in-app and by email.
             </p>
             <form onSubmit={submitMatch} className="mt-5 space-y-4">
               <div>

@@ -61,39 +61,15 @@ export async function POST(req: Request) {
     );
   }
 
-  const [aConvs, bConvs] = await Promise.all([
-    conversationsForUser(a),
-    conversationsForUser(b),
-  ]);
-
   // Reuse an existing contract thread between the same two members.
-  const dup = aConvs.find(
+  const mine = await conversationsForUser(a);
+  const dup = mine.find(
     (c) =>
       c.kind === "contract" &&
       c.participants.includes(a) &&
       c.participants.includes(b),
   );
   if (dup) return NextResponse.json({ ok: true, id: dup.id });
-
-  // A member can only be in one active contract at a time — close the existing
-  // one (Unmatch) before matching them with someone new.
-  const aBusy = aConvs.some((c) => c.kind === "contract");
-  const bBusy = bConvs.some((c) => c.kind === "contract");
-  if (aBusy || bBusy) {
-    const who =
-      aBusy && bBusy
-        ? "Both members are"
-        : aBusy
-          ? `${ua.name} is`
-          : `${ub.name} is`;
-    return NextResponse.json(
-      {
-        ok: false,
-        error: `${who} already in a contract. Close it (Unmatch) before matching again.`,
-      },
-      { status: 409 },
-    );
-  }
 
   const title = String(body?.title ?? "").trim() || "Contract match";
   const conv = await conversationCreate("contract", [a, b], title);
