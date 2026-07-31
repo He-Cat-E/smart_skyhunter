@@ -6,6 +6,8 @@ import {
   supportConversationFor,
 } from "@/lib/store";
 import { notifyUser } from "@/lib/notify";
+import { sendContractMatchEmail } from "@/lib/email";
+import { SITE_URL } from "@/lib/site";
 
 export const runtime = "nodejs";
 
@@ -84,6 +86,14 @@ export async function POST(req: Request) {
     title: "You've been matched for a contract",
     body: `SkyHunter connected you with ${ua.name}. Open your messages to chat.`,
   });
+
+  // Also email both members from support@skyhunterlab.online (best-effort).
+  const url = `${SITE_URL}/messages/${conv.id}`;
+  const context = String(body?.title ?? "").trim();
+  await Promise.all([
+    sendContractMatchEmail(a, ua.name, ub.name, context, url),
+    sendContractMatchEmail(b, ub.name, ua.name, context, url),
+  ]).catch(() => {});
 
   return NextResponse.json({ ok: true, id: conv.id });
 }
