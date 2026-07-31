@@ -1,11 +1,11 @@
 import { Wordmark } from "./Wordmark";
 
-// SkyHunter mark: an upward origami arrow — ascent and aim — set in a violet
-// brand badge. Reads as a paper plane rising / an arrowhead pointing up, echoing
-// "rise above the AI shakeup." Scales cleanly down to favicon size.
+// SkyHunter mark: two rising chevrons — a clean geometric "ascent" that pairs
+// with the Sora wordmark. Badgeless so it reads as a modern brand mark on any
+// background; the violet gradient carries the brand.
 export function Logo({
   className = "",
-  size = 38,
+  size = 34,
 }: {
   className?: string;
   size?: number;
@@ -22,32 +22,25 @@ export function Logo({
       >
         <defs>
           <linearGradient
-            id="sh-badge"
-            x1="4"
-            y1="3"
-            x2="36"
-            y2="37"
+            id="sh-asc"
+            x1="6"
+            y1="8"
+            x2="34"
+            y2="32"
             gradientUnits="userSpaceOnUse"
           >
             <stop stopColor="#a855f7" />
             <stop offset="1" stopColor="#6d28d9" />
           </linearGradient>
         </defs>
-        {/* violet squircle badge with a crisp hairline edge */}
-        <rect x="2.5" y="2.5" width="35" height="35" rx="11" fill="url(#sh-badge)" />
-        <rect
-          x="3"
-          y="3"
-          width="34"
-          height="34"
-          rx="10.5"
-          fill="none"
-          stroke="#ffffff"
-          strokeOpacity="0.18"
+        {/* leading chevron */}
+        <path d="M20 7 L34 20 L29 20 L20 12 L11 20 L6 20 Z" fill="url(#sh-asc)" />
+        {/* trailing chevron — the rising echo */}
+        <path
+          d="M20 16 L34 29 L29 29 L20 21 L11 29 L6 29 Z"
+          fill="url(#sh-asc)"
+          fillOpacity="0.42"
         />
-        {/* upward origami arrow — the two faces fold along the center crease */}
-        <path d="M20 8.5 L11 30 L20 25 Z" fill="#ffffff" fillOpacity="0.62" />
-        <path d="M20 8.5 L29 30 L20 25 Z" fill="#ffffff" />
       </svg>
       <Wordmark className="text-2xl" />
     </span>

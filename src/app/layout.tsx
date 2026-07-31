@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Inter, Space_Grotesk } from "next/font/google";
+import { Sora, Manrope } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -13,22 +13,17 @@ import { PresenceBeacon } from "@/components/PresenceBeacon";
 // file per weight — fewer requests, smaller total payload, faster text paint.
 // These are variable fonts; next/font serves the variable file (covering every
 // weight Tailwind uses) whether or not we pin weights, so we omit the arrays.
-const jakarta = Plus_Jakarta_Sans({
+// Display + brand wordmark: Sora — a modern geometric sans.
+const sora = Sora({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-sora",
   display: "swap",
 });
 
-// Distinctive wordmark font for the "SkyHunter" brand name only.
-const spaceGrotesk = Space_Grotesk({
+// Body copy: Manrope — clean, friendly, highly readable.
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-space",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-manrope",
   display: "swap",
 });
 
@@ -54,7 +49,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${jakarta.variable} ${inter.variable} ${spaceGrotesk.variable}`}
+      className={`${sora.variable} ${manrope.variable}`}
     >
       <body className="min-h-screen antialiased">
         {/* Set the theme before first paint so there's no light/dark flash.
