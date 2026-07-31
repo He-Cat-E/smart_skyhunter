@@ -328,14 +328,14 @@ export default async function HomePage() {
           <div className="lift overflow-hidden rounded-2xl border border-steel-line bg-navy">
             <div className="bg-sky-art px-8 py-16 text-center sm:px-16">
               <p className="font-display text-xs font-semibold uppercase tracking-[0.35em] text-blue-300">
-                <AuthSwitch guest="Launching soon" authed="Your next move" />
+                <AuthSwitch guest="Free for job seekers" authed="Your next move" />
               </p>
               <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-chrome sm:text-5xl">
                 Your next chapter is cleared for takeoff
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-mist">
                 <AuthSwitch
-                  guest="Sign up now to lock in early access, unlock the full board, and be first through the doors on launch day."
+                  guest="Create your free account, get matched to human-first roles, and start your next chapter today."
                   authed="Browse open roles, apply in one click, and track it all from your dashboard."
                 />
               </p>

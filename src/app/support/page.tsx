@@ -89,6 +89,29 @@ export default async function SupportPage() {
           </Reveal>
         ))}
       </div>
+
+      {/* Contact our team */}
+      <div className="mt-12 flex flex-col items-start gap-4 rounded-2xl border border-steel-line bg-navy/60 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-display text-xl font-bold text-chrome">
+            Need to reach a human?
+          </p>
+          <p className="mt-1 text-sm text-mist">
+            Our team is here to help — email us and we&apos;ll get back to you.
+          </p>
+        </div>
+        <a
+          href="mailto:support@skyhunterlab.online"
+          className="shrink-0 rounded-lg bg-blue-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-400"
+        >
+          Email our team
+        </a>
+      </div>
+
+      <p className="mt-6 text-center text-xs text-faint">
+        SkyHunter is not a government agency. Always confirm eligibility and
+        details with the official program sources linked above.
+      </p>
     </section>
   );
 }

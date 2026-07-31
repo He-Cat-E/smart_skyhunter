@@ -12,9 +12,12 @@ export function Footer() {
               The elevated job platform for people rising above the AI shakeup.
               Build. Innovate. Elevate.
             </p>
-            <p className="mt-4 font-display text-xs font-semibold uppercase tracking-[0.3em] text-blue-400">
-              Launching soon
-            </p>
+            <Link
+              href="/signup"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-400"
+            >
+              Join SkyHunter — it&apos;s free
+            </Link>
           </div>
 
           <div>
@@ -58,7 +61,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/signup" className="text-blue-300 hover:text-blue-400">
-                  Sign up for early access →
+                  Create your free account →
                 </Link>
               </li>
               <li>
@@ -73,7 +76,15 @@ export function Footer() {
         <div className="streak mt-12" />
         <div className="mt-6 flex flex-col items-start justify-between gap-3 text-xs text-faint sm:flex-row sm:items-center">
           <p>© {2026} SkyHunter. Build. Innovate. Elevate.</p>
-          <p>Not a government site. Always verify benefits with official sources.</p>
+          <p>
+            Questions?{" "}
+            <a
+              href="mailto:support@skyhunterlab.online"
+              className="font-medium text-fog transition-colors hover:text-blue-300"
+            >
+              support@skyhunterlab.online
+            </a>
+          </p>
         </div>
       </div>
     </footer>
