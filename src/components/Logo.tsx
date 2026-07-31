@@ -1,6 +1,8 @@
 import { Wordmark } from "./Wordmark";
 
-// SkyHunter mark: a cloud with a rising arrow bursting upward — echoing the key art.
+// SkyHunter mark: an upward origami arrow — ascent and aim — set in a violet
+// brand badge. Reads as a paper plane rising / an arrowhead pointing up, echoing
+// "rise above the AI shakeup." Scales cleanly down to favicon size.
 export function Logo({
   className = "",
   size = 38,
@@ -19,26 +21,33 @@ export function Logo({
         className="shrink-0"
       >
         <defs>
-          <linearGradient id="sh-cloud" x1="6" y1="8" x2="30" y2="26" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#7cc4ff" />
-            <stop offset="1" stopColor="#2f7bff" />
-          </linearGradient>
-          <linearGradient id="sh-arrow" x1="10" y1="34" x2="34" y2="12" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#0e1424" />
-            <stop offset="1" stopColor="#1e5fe0" />
+          <linearGradient
+            id="sh-badge"
+            x1="4"
+            y1="3"
+            x2="36"
+            y2="37"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#a855f7" />
+            <stop offset="1" stopColor="#6d28d9" />
           </linearGradient>
         </defs>
-        {/* cloud */}
-        <path
-          d="M12 22a6 6 0 0 1 .6-11.9A8 8 0 0 1 28 12a5.5 5.5 0 0 1-1 11H13a5 5 0 0 1-1-1z"
-          fill="url(#sh-cloud)"
+        {/* violet squircle badge with a crisp hairline edge */}
+        <rect x="2.5" y="2.5" width="35" height="35" rx="11" fill="url(#sh-badge)" />
+        <rect
+          x="3"
+          y="3"
+          width="34"
+          height="34"
+          rx="10.5"
+          fill="none"
+          stroke="#ffffff"
+          strokeOpacity="0.18"
         />
-        {/* rising arrow / paper plane */}
-        <path
-          d="M6 33c9-1 15-5 24-15l-4-1 6-4-1 7-3-2C19 26 13 31 6 33z"
-          fill="url(#sh-arrow)"
-        />
-        <circle cx="30" cy="12" r="1.6" fill="#aee0ff" />
+        {/* upward origami arrow — the two faces fold along the center crease */}
+        <path d="M20 8.5 L11 30 L20 25 Z" fill="#ffffff" fillOpacity="0.62" />
+        <path d="M20 8.5 L29 30 L20 25 Z" fill="#ffffff" />
       </svg>
       <Wordmark className="text-2xl" />
     </span>
