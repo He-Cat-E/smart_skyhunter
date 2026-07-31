@@ -7,6 +7,8 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { ChatNotifier } from "@/components/ChatNotifier";
 import { VisitTracker } from "@/components/VisitTracker";
 import { PresenceBeacon } from "@/components/PresenceBeacon";
+import { Analytics } from "@/components/Analytics";
+import { ConversionListener } from "@/components/ConversionListener";
 import { SITE_URL, SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from "@/lib/site";
 
 // Variable fonts: omitting `weight` loads a single variable file that covers
@@ -134,7 +136,9 @@ export default function RootLayout({
           <ChatNotifier />
           <VisitTracker />
           <PresenceBeacon />
+          <ConversionListener />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );

@@ -90,6 +90,7 @@ export async function GET(
 
     // --- Sign-in mode: link by email, sign in or create -------------------
     let user = await findUser(profile.email);
+    const isNewSignup = !user; // brand-new account → fire the Ads conversion
     // Suspended accounts are disabled — don't let them sign in via OAuth.
     if (user && isSuspended(user)) {
       return fail("This account has been suspended. Contact support.");
@@ -150,7 +151,9 @@ export async function GET(
 
     await recordEvent("login", user.email).catch(() => {});
 
-    const res = NextResponse.redirect(new URL("/dashboard", req.url));
+    const res = NextResponse.redirect(
+      new URL(isNewSignup ? "/dashboard?signup=1" : "/dashboard", req.url),
+    );
     const sc = sessionCookie({ email: user.email, name: user.name });
     res.cookies.set(sc.name, sc.value, sc.options);
     const hint = authHintCookie();
