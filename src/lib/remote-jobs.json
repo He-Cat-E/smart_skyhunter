@@ -1,0 +1,642 @@
+[
+  {
+    "id": "ai-conversation-rater",
+    "title": "AI Conversation Quality Rater",
+    "company": "Verity Labs",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$20 – $32 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 1,
+    "humanEdge": "A model can't judge whether its own answer was actually helpful, safe, or kind. A person can — and that judgment is the product.",
+    "summary": "Read AI chatbot conversations and rate them for accuracy, tone, and helpfulness. Flexible hours, no coding — just good judgment and attention.",
+    "responsibilities": [
+      "Score AI responses against clear quality guidelines",
+      "Flag unsafe, biased, or misleading answers",
+      "Write short notes explaining your rating"
+    ],
+    "broughtFrom": "You already do this if you were in QA, customer support, or editing.",
+    "tags": ["No-code", "Flexible hours", "Growing field"]
+  },
+  {
+    "id": "rlhf-feedback-rater",
+    "title": "RLHF Feedback Rater",
+    "company": "Northlight AI",
+    "location": "Remote (US/EU)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$22 – $34 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 3,
+    "humanEdge": "Models learn what 'good' means from humans ranking their answers. Your taste literally trains the next generation of AI.",
+    "summary": "Compare AI answers and pick the better one, over and over, to teach models human preferences. Steady, remote, part-time friendly.",
+    "responsibilities": [
+      "Rank pairs of AI responses by quality and safety",
+      "Apply detailed rubrics consistently across many tasks",
+      "Surface edge cases the guidelines don't cover"
+    ],
+    "broughtFrom": "You already do this if you were a grader, reviewer, or detail-oriented analyst.",
+    "tags": ["Part-time OK", "Remote", "Steady work"]
+  },
+  {
+    "id": "llm-red-teamer",
+    "title": "LLM Red Teamer (Safety Tester)",
+    "company": "Aegis Research",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$35 – $55 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 2,
+    "humanEdge": "Finding the clever way a model can be tricked takes human creativity and mischief. That's not something AI is good at doing to itself.",
+    "summary": "Try to break AI systems — get them to say something harmful or wrong — so they can be fixed before launch. Curiosity is the core skill.",
+    "responsibilities": [
+      "Probe models for unsafe, biased, or false outputs",
+      "Document repeatable ways to trigger failures",
+      "Suggest guardrails the safety team can build"
+    ],
+    "broughtFrom": "You already do this if you're curious, skeptical, and like poking holes in things.",
+    "tags": ["High pay", "Creative", "Fast-growing"]
+  },
+  {
+    "id": "ai-model-evaluator",
+    "title": "AI Model Evaluator",
+    "company": "Benchmark Collective",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$25 – $40 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 4,
+    "humanEdge": "Deciding whether one model is genuinely better than another needs domain sense and honesty — the exact things you can't automate.",
+    "summary": "Test AI models on real tasks and score how well they do. Bring expertise from a field you already know (law, medicine, finance, writing).",
+    "responsibilities": [
+      "Run models through structured evaluation tasks",
+      "Judge correctness and usefulness in your domain",
+      "Write up findings that engineers can act on"
+    ],
+    "broughtFrom": "You already do this if you have deep knowledge in any professional field.",
+    "tags": ["Domain expertise", "Remote", "Flexible"]
+  },
+  {
+    "id": "prompt-qa-specialist",
+    "title": "Prompt QA Specialist",
+    "company": "Lucid Systems",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$25 – $42 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 5,
+    "humanEdge": "Writing and testing the instructions that make AI behave is craft work — small wording changes, big results. It rewards patience and precision.",
+    "summary": "Test and refine the prompts that power AI features, hunting for where they break. Part detective, part writer.",
+    "responsibilities": [
+      "Test prompts against tricky and adversarial inputs",
+      "Refine wording to make outputs reliable",
+      "Keep a clear record of what works and why"
+    ],
+    "broughtFrom": "You already do this if you were a tester, writer, or process-minded analyst.",
+    "tags": ["Writing + logic", "Remote", "New field"]
+  },
+  {
+    "id": "ai-escalation-specialist",
+    "title": "AI Escalation Specialist",
+    "company": "Relay Support Co.",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$22 – $34 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 2,
+    "humanEdge": "When the bot gets stuck or a customer gets upset, a human has to step in with judgment and care. That handoff is where trust is saved.",
+    "summary": "Handle the support conversations AI can't finish — the messy, emotional, or high-stakes ones. Calm under pressure is the job.",
+    "responsibilities": [
+      "Take over chats the AI escalates to a human",
+      "Resolve sensitive or complex customer issues",
+      "Feed back patterns so the bot improves"
+    ],
+    "broughtFrom": "You already do this if you were in customer support, success, or account management.",
+    "tags": ["Human touch", "Remote", "Part-time OK"]
+  },
+  {
+    "id": "ai-content-moderator",
+    "title": "AI Content Moderator",
+    "company": "Haven Trust & Safety",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$18 – $27 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 6,
+    "humanEdge": "Context and nuance decide what's actually harmful vs. fine. Automated filters miss it constantly — a human read is the safety net.",
+    "summary": "Review flagged content and AI moderation decisions to keep platforms safe. Careful, steady work with real impact.",
+    "responsibilities": [
+      "Review flagged posts, images, and AI decisions",
+      "Apply policy consistently and fairly",
+      "Escalate the genuinely difficult cases"
+    ],
+    "broughtFrom": "You already do this if you were in moderation, compliance, or customer service.",
+    "tags": ["Steady demand", "Remote", "Policy work"]
+  },
+  {
+    "id": "search-quality-rater",
+    "title": "Search Quality Rater",
+    "company": "Wayfinder Data",
+    "location": "Remote (US/EU)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$17 – $26 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 7,
+    "humanEdge": "Whether a result actually answers what a person meant is a human call. Search and AI both lean on people to tell them when they're wrong.",
+    "summary": "Rate how well search and AI results match what people are really looking for. Work your own hours from home.",
+    "responsibilities": [
+      "Evaluate search and AI results against real queries",
+      "Judge relevance, quality, and trustworthiness",
+      "Follow detailed rating guidelines closely"
+    ],
+    "broughtFrom": "You already do this if you're a careful reader with good judgment.",
+    "tags": ["Set your hours", "Remote", "Entry-friendly"]
+  },
+  {
+    "id": "ai-fact-checker",
+    "title": "AI Fact-Checker",
+    "company": "Ledger & Proof",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$26 – $40 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 3,
+    "humanEdge": "Models state falsehoods with total confidence. Verifying claims against real sources is patient, human detective work.",
+    "summary": "Check AI-generated claims against reliable sources and correct what's wrong before it ships. Rigor is the whole game.",
+    "responsibilities": [
+      "Verify facts, figures, and citations in AI output",
+      "Track down and log primary sources",
+      "Rewrite or flag anything that can't be confirmed"
+    ],
+    "broughtFrom": "You already do this if you were a journalist, researcher, editor, or paralegal.",
+    "tags": ["Research", "Remote", "Detail-driven"]
+  },
+  {
+    "id": "data-annotation-specialist",
+    "title": "AI Training Data Annotator",
+    "company": "Groundtruth Labs",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$18 – $28 / hr",
+    "category": "AI Oversight",
+    "postedDaysAgo": 4,
+    "humanEdge": "Every capable model was taught by humans labeling examples. Your careful tags become the ground truth the machine learns from.",
+    "summary": "Label text, images, and audio so AI models can learn from clean, accurate examples. Flexible, remote, beginner-friendly.",
+    "responsibilities": [
+      "Tag and categorize data to detailed guidelines",
+      "Keep labels accurate and consistent at volume",
+      "Raise questions when the rules are unclear"
+    ],
+    "broughtFrom": "You already do this if you're detail-oriented and reliable — no experience required.",
+    "tags": ["Entry-friendly", "Remote", "Flexible"]
+  },
+  {
+    "id": "voice-and-tone-editor",
+    "title": "Voice & Tone Editor",
+    "company": "Draft House",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$32 – $55 / hr",
+    "category": "Creative",
+    "postedDaysAgo": 2,
+    "humanEdge": "AI writes correct and forgettable. Giving copy a real voice — warmth, wit, a point of view — is the taste machines can't fake.",
+    "summary": "Turn flat AI drafts into writing that sounds like a person and holds a brand's voice. Portfolio over pedigree.",
+    "responsibilities": [
+      "Rewrite AI drafts to match a distinct brand voice",
+      "Add the specific, human detail models miss",
+      "Keep tone consistent across every channel"
+    ],
+    "broughtFrom": "You already do this if you were a writer, editor, marketer, or teacher.",
+    "tags": ["Portfolio-based", "Remote", "Voice matters"]
+  },
+  {
+    "id": "copy-editor-proofreader",
+    "title": "Copy Editor & Proofreader",
+    "company": "Clearline Media",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$24 – $42 / hr",
+    "category": "Creative",
+    "postedDaysAgo": 5,
+    "humanEdge": "A person catches the tone-deaf sentence and the joke that lands wrong — the things spellcheck and AI sail right past.",
+    "summary": "Polish articles, marketing, and AI-assisted copy until it's clean, clear, and correct. Precise, calming, remote work.",
+    "responsibilities": [
+      "Edit for grammar, clarity, flow, and consistency",
+      "Catch errors AI and spellcheck miss",
+      "Keep a house style guide honest"
+    ],
+    "broughtFrom": "You already do this if you were an editor, teacher, or anyone people trust to proofread.",
+    "tags": ["Flexible", "Remote", "Detail-driven"]
+  },
+  {
+    "id": "ux-writer",
+    "title": "UX Writer (Contract)",
+    "company": "Northgate Product Studio",
+    "location": "Remote (US/EU)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$38 – $65 / hr",
+    "category": "Creative",
+    "postedDaysAgo": 3,
+    "humanEdge": "The tiny words in a product — buttons, errors, empty states — decide whether people feel calm or lost. That empathy is deeply human.",
+    "summary": "Write the microcopy that guides people through apps and websites. Clear, kind words that make software feel easy.",
+    "responsibilities": [
+      "Write buttons, tooltips, errors, and onboarding text",
+      "Make complex flows feel simple and reassuring",
+      "Partner with designers to shape the experience"
+    ],
+    "broughtFrom": "You already do this if you were a writer, support agent, or anyone good at plain language.",
+    "tags": ["High pay", "Remote", "Product work"]
+  },
+  {
+    "id": "voiceover-narrator",
+    "title": "Voiceover Artist & Narrator",
+    "company": "Resonant Audio",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$30 – $70 / hr",
+    "category": "Creative",
+    "postedDaysAgo": 6,
+    "humanEdge": "Synthetic voices are close, but a real human's warmth, timing, and feeling still carry stories in a way AI can't quite reach.",
+    "summary": "Record narration for courses, videos, audiobooks, and brands from your home setup. Your voice is the product.",
+    "responsibilities": [
+      "Record clean narration to a script and brief",
+      "Bring warmth, pacing, and character to reads",
+      "Deliver edited audio to spec"
+    ],
+    "broughtFrom": "You already do this if people love your speaking voice and you're comfortable on mic.",
+    "tags": ["Home studio", "Remote", "Creative"]
+  },
+  {
+    "id": "caption-transcription-editor",
+    "title": "Caption & Transcription Editor",
+    "company": "Verbatim Works",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$18 – $28 / hr",
+    "category": "Creative",
+    "postedDaysAgo": 4,
+    "humanEdge": "Auto-captions still mangle names, accents, and meaning. A human ear fixes what the machine mishears — accuracy people rely on.",
+    "summary": "Clean up AI-generated captions and transcripts so they're accurate and readable. Flexible, remote, work at your pace.",
+    "responsibilities": [
+      "Correct AI transcripts against the audio",
+      "Fix names, terms, timing, and punctuation",
+      "Ensure captions meet accessibility standards"
+    ],
+    "broughtFrom": "You already do this if you type well and have a good ear.",
+    "tags": ["Set your hours", "Remote", "Entry-friendly"]
+  },
+  {
+    "id": "localization-reviewer",
+    "title": "Localization & Translation Reviewer",
+    "company": "Meridian Localize",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$22 – $40 / hr",
+    "category": "Creative",
+    "postedDaysAgo": 5,
+    "humanEdge": "Machine translation gets the words but misses the culture — the idiom, the tone, the thing that would offend. Native judgment fixes that.",
+    "summary": "Review AI and machine translations in a language you know natively so they sound natural and land right.",
+    "responsibilities": [
+      "Review translations for accuracy and cultural fit",
+      "Fix tone, idiom, and context the machine missed",
+      "Keep terminology consistent across a project"
+    ],
+    "broughtFrom": "You already do this if you're fluent in two languages and notice when something 'sounds off'.",
+    "tags": ["Bilingual", "Remote", "Flexible"]
+  },
+  {
+    "id": "social-community-manager",
+    "title": "Social Community Manager",
+    "company": "Bright Harbor Brands",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$22 – $38 / hr",
+    "category": "Creative",
+    "postedDaysAgo": 2,
+    "humanEdge": "People can smell a bot reply instantly. Real conversation, humor, and reading the room are what actually build a community.",
+    "summary": "Run a brand's social presence — reply to people, spark conversation, keep the vibe human. Personality is the skill.",
+    "responsibilities": [
+      "Engage with comments, DMs, and mentions",
+      "Draft posts that sound like a person, not a press release",
+      "Spot and defuse issues before they grow"
+    ],
+    "broughtFrom": "You already do this if you were in social media, support, or just great with people online.",
+    "tags": ["Personality", "Remote", "Part-time OK"]
+  },
+  {
+    "id": "podcast-editor",
+    "title": "Podcast Editor",
+    "company": "Longform Audio Co.",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$25 – $45 / hr",
+    "category": "Creative",
+    "postedDaysAgo": 7,
+    "humanEdge": "Knowing which tangent to cut and which pause to keep is storytelling instinct — taste that tools can assist but not replace.",
+    "summary": "Edit raw podcast recordings into tight, engaging episodes. Shape the story, clean the sound, keep the humanity.",
+    "responsibilities": [
+      "Cut, tighten, and structure episodes for flow",
+      "Clean audio, remove filler, balance levels",
+      "Add music and polish to a consistent standard"
+    ],
+    "broughtFrom": "You already do this if you've edited audio or video, or have a great ear for a story.",
+    "tags": ["Creative", "Remote", "Flexible"]
+  },
+  {
+    "id": "remote-customer-support",
+    "title": "Remote Customer Support Specialist",
+    "company": "Kindred Helpdesk",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$18 – $28 / hr",
+    "category": "People & Care",
+    "postedDaysAgo": 1,
+    "humanEdge": "When someone's frustrated, they want a person who gets it — not a canned reply. Empathy and patience keep customers loyal.",
+    "summary": "Help customers over chat and email with real care and clear answers. Friendly, steady, work-from-home work.",
+    "responsibilities": [
+      "Answer customer questions with warmth and clarity",
+      "Solve problems and follow through to the end",
+      "Turn a bad day into a good experience"
+    ],
+    "broughtFrom": "You already do this if you were in retail, service, support, or hospitality.",
+    "tags": ["Entry-friendly", "Remote", "Part-time OK"]
+  },
+  {
+    "id": "telehealth-care-coordinator",
+    "title": "Telehealth Care Coordinator",
+    "company": "Willowbrook Health",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$23 – $35 / hr",
+    "category": "People & Care",
+    "postedDaysAgo": 2,
+    "humanEdge": "Guiding an anxious patient through appointments and benefits takes reassurance and follow-through — care that's human by nature.",
+    "summary": "Support patients remotely through scheduling, benefits, and the confusing parts of care. Warmth and organization win here.",
+    "responsibilities": [
+      "Coordinate appointments, referrals, and follow-ups",
+      "Explain benefits and next steps in plain language",
+      "Be the steady contact patients can count on"
+    ],
+    "broughtFrom": "You already do this if you were in admin, customer success, or any caregiving role.",
+    "tags": ["Meaningful", "Remote", "Rising demand"]
+  },
+  {
+    "id": "peer-support-specialist",
+    "title": "Peer Support Specialist (Remote)",
+    "company": "Steady Ground Wellness",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$20 – $30 / hr",
+    "category": "People & Care",
+    "postedDaysAgo": 3,
+    "humanEdge": "Having been through it yourself is the whole point. Lived experience and genuine listening are impossible to automate.",
+    "summary": "Support people navigating hard times through your own lived experience. Listening is the core of the role. Training provided.",
+    "responsibilities": [
+      "Hold supportive one-on-one conversations",
+      "Share what helped you, without judgment",
+      "Point people toward resources and next steps"
+    ],
+    "broughtFrom": "You already do this if you've supported others through recovery, loss, or big change.",
+    "tags": ["Meaningful", "Remote", "Training provided"]
+  },
+  {
+    "id": "online-community-moderator",
+    "title": "Online Community Moderator",
+    "company": "Commons Collective",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$18 – $27 / hr",
+    "category": "People & Care",
+    "postedDaysAgo": 5,
+    "humanEdge": "Keeping a community kind takes judgment about context and people — the nuance automated filters get wrong every day.",
+    "summary": "Keep an online community welcoming and safe — welcome newcomers, enforce the rules fairly, defuse conflict. Remote, flexible.",
+    "responsibilities": [
+      "Welcome members and answer questions",
+      "Enforce community guidelines fairly",
+      "Calm tension and escalate real problems"
+    ],
+    "broughtFrom": "You already do this if you've run a group, forum, or Discord — or are just great with people.",
+    "tags": ["Flexible", "Remote", "People-first"]
+  },
+  {
+    "id": "remote-patient-advocate",
+    "title": "Remote Patient Advocate",
+    "company": "Northstar Care Partners",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$24 – $38 / hr",
+    "category": "People & Care",
+    "postedDaysAgo": 4,
+    "humanEdge": "Fighting a billing error or explaining a diagnosis to a scared family takes advocacy and heart — trust that only a person earns.",
+    "summary": "Help patients understand their care, bills, and options, and advocate on their behalf. Persistence and compassion required.",
+    "responsibilities": [
+      "Explain diagnoses, bills, and coverage clearly",
+      "Advocate with providers and insurers",
+      "Stay with each case until it's resolved"
+    ],
+    "broughtFrom": "You already do this if you were in healthcare admin, insurance, or customer advocacy.",
+    "tags": ["Meaningful", "Remote", "Advocacy"]
+  },
+  {
+    "id": "virtual-executive-assistant",
+    "title": "Virtual Executive Assistant",
+    "company": "Anchor & Co.",
+    "location": "Remote (US/EU)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$22 – $36 / hr",
+    "category": "Operations",
+    "postedDaysAgo": 2,
+    "humanEdge": "Anticipating what a busy person needs before they ask is intuition and trust — the human glue no tool replaces.",
+    "summary": "Keep a founder or executive organized from anywhere — calendar, inbox, travel, the thousand small things. Discretion and follow-through win.",
+    "responsibilities": [
+      "Manage calendars, inboxes, and travel",
+      "Prep, chase, and close the loop on tasks",
+      "Anticipate needs and remove friction"
+    ],
+    "broughtFrom": "You already do this if you were an assistant, coordinator, or the organized one everyone relies on.",
+    "tags": ["Flexible", "Remote", "Trusted role"]
+  },
+  {
+    "id": "remote-data-qa",
+    "title": "Remote Data QA Specialist",
+    "company": "Cornerstone Data",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$20 – $33 / hr",
+    "category": "Operations",
+    "postedDaysAgo": 6,
+    "humanEdge": "Automated checks catch the obvious; a careful human catches the subtle wrong-but-plausible data that would slip right through.",
+    "summary": "Review datasets and automated outputs for errors before they cause problems downstream. Careful, methodical, remote work.",
+    "responsibilities": [
+      "Spot-check data for accuracy and consistency",
+      "Trace and document the source of errors",
+      "Sign off on quality before data ships"
+    ],
+    "broughtFrom": "You already do this if you were in QA, analysis, bookkeeping, or admin.",
+    "tags": ["Detail-driven", "Remote", "Flexible"]
+  },
+  {
+    "id": "virtual-operations-coordinator",
+    "title": "Virtual Operations Coordinator",
+    "company": "Tideline Operations",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$22 – $35 / hr",
+    "category": "Operations",
+    "postedDaysAgo": 3,
+    "humanEdge": "When the automated workflow breaks, someone has to think, decide, and make the calls. Judgment under pressure is the value.",
+    "summary": "Keep a remote team's day-to-day running — vendors, schedules, small fires. The reliable generalist every business needs.",
+    "responsibilities": [
+      "Coordinate schedules, vendors, and tasks",
+      "Build simple systems that prevent repeat problems",
+      "Be the calm point of contact when things go sideways"
+    ],
+    "broughtFrom": "You already do this if you were an office manager, coordinator, or team lead.",
+    "tags": ["Generalist", "Remote", "Part-time OK"]
+  },
+  {
+    "id": "remote-bookkeeper",
+    "title": "Remote Bookkeeper (Contract)",
+    "company": "Balance Ledger Co.",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$25 – $45 / hr",
+    "category": "Operations",
+    "postedDaysAgo": 5,
+    "humanEdge": "Software automates the entries, but reconciling the messy reality — and knowing when a number is wrong — takes a trained human eye.",
+    "summary": "Keep small businesses' books clean and current from home. Steady, flexible, and always in demand.",
+    "responsibilities": [
+      "Reconcile accounts and categorize transactions",
+      "Prepare clear monthly reports",
+      "Flag anomalies before they become problems"
+    ],
+    "broughtFrom": "You already do this if you did bookkeeping, accounting, or careful admin work.",
+    "tags": ["Stable demand", "Remote", "Flexible"]
+  },
+  {
+    "id": "scheduling-dispatch-coordinator",
+    "title": "Scheduling & Dispatch Coordinator (Remote)",
+    "company": "Routeworks",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$20 – $30 / hr",
+    "category": "Operations",
+    "postedDaysAgo": 4,
+    "humanEdge": "Real life throws curveballs the schedule didn't plan for. A calm human who can re-juggle on the fly keeps everything moving.",
+    "summary": "Coordinate schedules and dispatch for field teams from home, adjusting in real time when plans change. Cool head required.",
+    "responsibilities": [
+      "Build and adjust daily schedules and routes",
+      "Handle last-minute changes and conflicts",
+      "Keep teams and customers informed"
+    ],
+    "broughtFrom": "You already do this if you were a dispatcher, coordinator, or great at logistics.",
+    "tags": ["Fast-paced", "Remote", "Part-time OK"]
+  },
+  {
+    "id": "online-tutor",
+    "title": "Online Tutor (Adult & K-12)",
+    "company": "Second Draft Academy",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$20 – $40 / hr",
+    "category": "Education",
+    "postedDaysAgo": 2,
+    "humanEdge": "A patient person who notices exactly where a learner is stuck — and believes in them — does what no app can.",
+    "summary": "Tutor students one-on-one over video in a subject you know well. Set your own hours from anywhere.",
+    "responsibilities": [
+      "Run one-on-one sessions tailored to each learner",
+      "Explain concepts in more than one way until they click",
+      "Encourage students through the hard parts"
+    ],
+    "broughtFrom": "You already do this if you've taught, tutored, or explained things to anyone patiently.",
+    "tags": ["Set your hours", "Remote", "Meaningful"]
+  },
+  {
+    "id": "esl-conversation-coach",
+    "title": "ESL Conversation Coach",
+    "company": "Openworld Languages",
+    "location": "Remote (Global)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$18 – $30 / hr",
+    "category": "Education",
+    "postedDaysAgo": 5,
+    "humanEdge": "Building the confidence to speak a new language comes from a warm human on the other end — encouragement an app can't give.",
+    "summary": "Help learners practice real English conversation over video. Friendly, encouraging, flexible hours worldwide.",
+    "responsibilities": [
+      "Lead relaxed conversation practice sessions",
+      "Gently correct and build confidence",
+      "Adapt to each learner's level and goals"
+    ],
+    "broughtFrom": "You already do this if you speak English fluently and love a good conversation.",
+    "tags": ["Global", "Remote", "Flexible"]
+  },
+  {
+    "id": "course-content-reviewer",
+    "title": "Course Content Reviewer",
+    "company": "Lumen Learning Studio",
+    "location": "Remote (US/EU)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$25 – $40 / hr",
+    "category": "Education",
+    "postedDaysAgo": 6,
+    "humanEdge": "Knowing whether a lesson will actually land for a real, distracted human is teaching intuition — the part AI can't test for.",
+    "summary": "Review online course material and AI-generated lessons for accuracy, clarity, and whether they'll actually teach. Remote, flexible.",
+    "responsibilities": [
+      "Review lessons for accuracy and clarity",
+      "Flag confusing or misleading content",
+      "Suggest examples and edits that help learning"
+    ],
+    "broughtFrom": "You already do this if you were a teacher, trainer, editor, or subject expert.",
+    "tags": ["Domain expertise", "Remote", "Flexible"]
+  },
+  {
+    "id": "curriculum-writer",
+    "title": "Curriculum Writer (Contract)",
+    "company": "Foundry Education",
+    "location": "Remote (US)",
+    "mode": "Remote",
+    "type": "Contract",
+    "salary": "$30 – $52 / hr",
+    "category": "Education",
+    "postedDaysAgo": 3,
+    "humanEdge": "Designing a path that takes a nervous beginner to competent takes empathy and pedagogy — sequencing that machines can't feel out.",
+    "summary": "Design lessons and course outlines that actually help people learn a new skill. Bring what you know and how you'd teach it.",
+    "responsibilities": [
+      "Structure courses from beginner to confident",
+      "Write clear lessons, examples, and exercises",
+      "Anticipate where learners get stuck"
+    ],
+    "broughtFrom": "You already do this if you've trained new hires, taught, or built any how-to.",
+    "tags": ["High pay", "Remote", "Creative"]
+  }
+]

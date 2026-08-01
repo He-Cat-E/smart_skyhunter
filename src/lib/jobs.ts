@@ -1,3 +1,5 @@
+import REMOTE_JOBS_DATA from "./remote-jobs.json";
+
 export type Job = {
   id: string;
   title: string;
@@ -49,7 +51,11 @@ export const CATEGORIES = [
   "Education",
 ] as const;
 
+// 30+ remote, hourly-paid roles live in remote-jobs.json so the data is a single
+// source of truth (also used by the DB seed script). Spread in ahead of the
+// originals so the newest remote listings surface first.
 export const JOBS: Job[] = [
+  ...(REMOTE_JOBS_DATA as Job[]),
   {
     id: "ai-output-auditor",
     title: "AI Output Auditor",
