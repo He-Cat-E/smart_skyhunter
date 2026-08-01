@@ -12,10 +12,22 @@ export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    const current =
-      (document.documentElement.getAttribute("data-theme") as Theme | null) ??
-      "light";
-    setTheme(current);
+    // localStorage is the source of truth. Re-apply it on mount so the saved
+    // choice always wins — even if hydration cleared the <html> data-theme the
+    // no-flash script set. Falls back to the current attribute, then OS.
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem(STORAGE_KEY);
+    } catch {
+      /* private mode */
+    }
+    const resolved: Theme =
+      saved === "dark" || saved === "light"
+        ? saved
+        : ((document.documentElement.getAttribute("data-theme") as Theme) ??
+          "light");
+    document.documentElement.setAttribute("data-theme", resolved);
+    setTheme(resolved);
   }, []);
 
   function toggle() {
