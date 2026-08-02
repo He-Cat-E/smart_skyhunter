@@ -1,10 +1,34 @@
 import { introList, applicationsAll, listUsers } from "@/lib/store";
+import { findUser } from "@/lib/auth";
 import {
   RequestsManager,
   type RequestRow,
 } from "@/components/admin/RequestsManager";
 
 export const dynamic = "force-dynamic";
+
+// Applications pack the cover note, portfolio link, and phone into one " · "
+// separated string (see /api/apply). Split it back out so the admin can read
+// each field — and open the portfolio/CV as a real link.
+function parseApplicationDetail(raw: string): {
+  note: string;
+  portfolio: string;
+  phone: string;
+} {
+  const detail = raw || "";
+  const portfolio =
+    detail.match(/Portfolio\/CV:\s*(\S[^·]*?)(?=\s·\s|$)/i)?.[1]?.trim() ?? "";
+  const phone =
+    detail.match(/(?:^|·\s*)Phone:\s*([^·]+?)(?=\s·\s|$)/i)?.[1]?.trim() ?? "";
+  const cut = detail.search(/\s·\s(?:Portfolio\/CV|Phone):/i);
+  const note =
+    cut >= 0
+      ? detail.slice(0, cut).trim()
+      : /^(Portfolio\/CV|Phone):/i.test(detail)
+        ? ""
+        : detail.trim();
+  return { note, portfolio, phone };
+}
 
 export default async function AdminRequestsPage() {
   const [intros, applications, users] = await Promise.all([
@@ -35,19 +59,42 @@ export default async function AdminRequestsPage() {
     scheduleNote: i.scheduleNote,
   }));
 
-  const appRows: RequestRow[] = applications.map((a) => ({
-    kind: "application",
-    id: a.id,
-    createdAt: a.createdAt,
-    memberName: a.email.split("@")[0],
-    memberEmail: a.email,
-    contactEmail: a.email,
-    phone: "",
-    title: a.jobTitle || a.jobId,
-    subtitle: `Job · ${a.jobId}`,
-    detail: a.note ?? "",
-    status: a.status,
-  }));
+  const appRows: RequestRow[] = await Promise.all(
+    applications.map(async (a) => {
+      const u = await findUser(a.email);
+      const { note, portfolio, phone } = parseApplicationDetail(a.note ?? "");
+      const p = u?.profile;
+      return {
+        kind: "application" as const,
+        id: a.id,
+        createdAt: a.createdAt,
+        memberName: u?.name || a.email.split("@")[0],
+        memberEmail: a.email,
+        contactEmail: a.email,
+        phone: phone || p?.phone || "",
+        title: a.jobTitle || a.jobId,
+        subtitle: `Job · ${a.jobId}`,
+        detail: note,
+        status: a.status,
+        portfolioUrl: portfolio,
+        profile: p
+          ? {
+              headline: p.headline,
+              summary: p.summary,
+              skills: p.skills,
+              experienceYears: p.experienceYears,
+              desiredRole: p.desiredRole,
+              workPreference: p.workPreference,
+              availability: p.availability,
+              desiredSalary: p.desiredSalary,
+              website: p.website,
+              linkedinUrl: p.linkedinUrl,
+              githubUrl: p.githubUrl,
+            }
+          : undefined,
+      };
+    }),
+  );
 
   const rows = [...introRows, ...appRows].sort((a, b) =>
     a.createdAt < b.createdAt ? 1 : -1,

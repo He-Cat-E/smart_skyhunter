@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   INTERVIEW_STATUSES,
@@ -24,6 +24,21 @@ export type RequestRow = {
   subtitle: string; // role / job id
   detail: string; // message / goals
   status: string;
+  // applications only
+  portfolioUrl?: string;
+  profile?: {
+    headline?: string;
+    summary?: string;
+    skills?: string[];
+    experienceYears?: string;
+    desiredRole?: string;
+    workPreference?: string;
+    availability?: string;
+    desiredSalary?: string;
+    website?: string;
+    linkedinUrl?: string;
+    githubUrl?: string;
+  };
   // interviews only — set once an admin schedules & sends it
   scheduledAt?: string;
   meetingLink?: string;
@@ -55,6 +70,181 @@ function statusesFor(kind: RequestRow["kind"]): readonly string[] {
   return kind === "interview" ? INTERVIEW_STATUSES : APPLICATION_STATUSES;
 }
 
+function fullDate(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function ExtLink({ href, label }: { href: string; label?: string }) {
+  const url = /^https?:\/\//i.test(href) ? href : `https://${href}`;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="break-all text-blue-500 underline decoration-blue-500/40 underline-offset-2 hover:text-blue-400"
+    >
+      {label || href}
+    </a>
+  );
+}
+
+function Field({
+  label,
+  children,
+  wide,
+}: {
+  label: string;
+  children?: React.ReactNode;
+  wide?: boolean;
+}) {
+  if (children === null || children === undefined || children === "") return null;
+  return (
+    <div className={wide ? "sm:col-span-2" : undefined}>
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-faint">
+        {label}
+      </dt>
+      <dd className="mt-0.5 whitespace-pre-line break-words text-sm text-mist">
+        {children}
+      </dd>
+    </div>
+  );
+}
+
+// The full, untruncated view of a request — cover note, portfolio/CV link,
+// contact details, and (for applications) the applicant's whole profile.
+function DetailPanel({ r }: { r: RequestRow }) {
+  const p = r.profile;
+  return (
+    <div className="rounded-xl border border-steel-line bg-void/70 p-4">
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+        {r.kind === "application" ? (
+          <Field label="Applied to" wide>
+            <span className="font-medium text-chrome">{r.title}</span>
+            <span className="text-fog"> · {r.subtitle}</span>
+          </Field>
+        ) : (
+          r.title && (
+            <Field label="Context" wide>
+              <span className="font-medium text-chrome">{r.title}</span>
+              {r.subtitle ? <span className="text-fog"> · {r.subtitle}</span> : null}
+            </Field>
+          )
+        )}
+
+        {r.detail && (
+          <Field label={r.kind === "application" ? "Cover note" : "Message"} wide>
+            {r.detail}
+          </Field>
+        )}
+
+        {r.portfolioUrl && (
+          <Field label="Portfolio / CV">
+            <ExtLink href={r.portfolioUrl} />
+          </Field>
+        )}
+        <Field label="Contact email">
+          <a
+            href={`mailto:${r.contactEmail || r.memberEmail}`}
+            className="text-blue-500 hover:text-blue-400"
+          >
+            {r.contactEmail || r.memberEmail}
+          </a>
+        </Field>
+        {r.phone && (
+          <Field label="Phone">
+            <a href={`tel:${r.phone}`} className="text-blue-500 hover:text-blue-400">
+              {r.phone}
+            </a>
+          </Field>
+        )}
+        <Field label="Submitted">{fullDate(r.createdAt)}</Field>
+
+        {r.kind === "interview" && r.scheduledAt && (
+          <Field label="Scheduled">{formatSchedule(r.scheduledAt)}</Field>
+        )}
+        {r.kind === "interview" && r.meetingLink && (
+          <Field label="Meeting link">
+            <ExtLink href={r.meetingLink} />
+          </Field>
+        )}
+        {r.kind === "interview" && r.scheduleNote && (
+          <Field label="Schedule note" wide>
+            {r.scheduleNote}
+          </Field>
+        )}
+
+        {/* Applicant profile snapshot */}
+        {p && (
+          <>
+            {(p.headline || p.summary) && (
+              <div className="mt-1 border-t border-steel-line pt-3 sm:col-span-2">
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-blue-300">
+                  Applicant profile
+                </div>
+              </div>
+            )}
+            {p.headline && (
+              <Field label="Headline" wide>
+                {p.headline}
+              </Field>
+            )}
+            {p.summary && (
+              <Field label="Summary" wide>
+                {p.summary}
+              </Field>
+            )}
+            {p.skills && p.skills.length > 0 && (
+              <Field label="Skills" wide>
+                <span className="flex flex-wrap gap-1.5">
+                  {p.skills.map((s) => (
+                    <span
+                      key={s}
+                      className="rounded-md bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-300 ring-1 ring-inset ring-blue-500/20"
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </span>
+              </Field>
+            )}
+            <Field label="Experience">
+              {p.experienceYears ? `${p.experienceYears} yrs` : undefined}
+            </Field>
+            <Field label="Desired role">{p.desiredRole}</Field>
+            <Field label="Work preference">{p.workPreference}</Field>
+            <Field label="Availability">{p.availability}</Field>
+            <Field label="Desired salary">{p.desiredSalary}</Field>
+            {p.website && (
+              <Field label="Website">
+                <ExtLink href={p.website} />
+              </Field>
+            )}
+            {p.linkedinUrl && (
+              <Field label="LinkedIn">
+                <ExtLink href={p.linkedinUrl} />
+              </Field>
+            )}
+            {p.githubUrl && (
+              <Field label="GitHub">
+                <ExtLink href={p.githubUrl} />
+              </Field>
+            )}
+          </>
+        )}
+      </dl>
+    </div>
+  );
+}
+
 export function RequestsManager({
   rows,
   members = [],
@@ -66,6 +256,16 @@ export function RequestsManager({
   const [filter, setFilter] = useState<Filter>("all");
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [openRows, setOpenRows] = useState<Set<string>>(new Set());
+
+  function toggleRow(key: string) {
+    setOpenRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   // Schedule modal state. `scheduling` = an existing interview row being
   // (re)scheduled; `creating` = a brand-new interview for any member.
@@ -344,8 +544,19 @@ export function RequestsManager({
             </tr>
           </thead>
           <tbody className="divide-y divide-steel-line">
-            {shown.map((r) => (
-              <tr key={`${r.kind}-${r.id}`} className="bg-void/40 align-top">
+            {shown.map((r) => {
+              const key = `${r.kind}-${r.id}`;
+              const isOpen = openRows.has(key);
+              const hasMore =
+                !!r.detail ||
+                !!r.portfolioUrl ||
+                !!r.phone ||
+                !!r.meetingLink ||
+                !!r.scheduleNote ||
+                !!r.profile;
+              return (
+              <Fragment key={key}>
+              <tr className="bg-void/40 align-top">
                 <td className="whitespace-nowrap px-4 py-3 text-fog">
                   {new Date(r.createdAt).toLocaleString("en-US", {
                     month: "short",
@@ -385,9 +596,9 @@ export function RequestsManager({
                   {r.subtitle && (
                     <div className="text-xs text-fog">{r.subtitle}</div>
                   )}
-                  {r.detail && (
+                  {r.detail && !isOpen && (
                     <p
-                      className="mt-1 line-clamp-3 text-xs text-mist"
+                      className="mt-1 line-clamp-2 text-xs text-mist"
                       title={r.detail}
                     >
                       {r.detail}
@@ -397,6 +608,17 @@ export function RequestsManager({
                     <p className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-amber-400/10 px-2 py-0.5 text-xs font-medium text-amber-600 ring-1 ring-amber-400/30">
                       Scheduled · {formatSchedule(r.scheduledAt)}
                     </p>
+                  )}
+                  {hasMore && (
+                    <button
+                      onClick={() => toggleRow(key)}
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-500 transition-colors hover:text-blue-400"
+                    >
+                      {isOpen ? "Hide details" : "View full details"}
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
                   )}
                 </td>
                 <td className="px-4 py-3">
@@ -449,7 +671,16 @@ export function RequestsManager({
                   </div>
                 </td>
               </tr>
-            ))}
+              {isOpen && (
+                <tr className="bg-navy/20">
+                  <td colSpan={6} className="px-4 pb-4 pt-0">
+                    <DetailPanel r={r} />
+                  </td>
+                </tr>
+              )}
+              </Fragment>
+              );
+            })}
             {shown.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-fog">
