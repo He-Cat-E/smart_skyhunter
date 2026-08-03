@@ -7,6 +7,7 @@ import {
   messageEdit,
   messageDelete,
   markConversationRead,
+  peerLastReadAt,
   type Conversation,
 } from "@/lib/store";
 import { typingIn, clearTyping } from "@/lib/typing";
@@ -64,6 +65,10 @@ export async function GET(
   // Viewing the thread counts as reading it — clears the unread badge.
   await markConversationRead(id, me);
 
+  // The latest time the other party read this thread — drives read receipts on
+  // the viewer's own messages.
+  const peerReadAt = await peerLastReadAt(id, me);
+
   // Who (other than me) is typing right now?
   let typing: string | null = null;
   const typers = typingIn(id, me);
@@ -96,6 +101,7 @@ export async function GET(
     },
     messages,
     typing,
+    peerReadAt,
     isAdmin: admin,
   });
 }

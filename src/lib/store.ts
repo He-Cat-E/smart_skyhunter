@@ -1644,6 +1644,41 @@ export async function conversationReads(
   );
 }
 
+// The latest time anyone OTHER than `email` read this conversation. Powers the
+// read receipts ("✓✓ Read") on the sender's own messages. Includes an admin who
+// read a support chat even though they aren't a listed participant.
+export async function peerLastReadAt(
+  conversationId: string,
+  email: string,
+): Promise<string | null> {
+  const e = lc(email);
+  return chatStore(
+    async (sb) => {
+      const { data, error } = await sb
+        .from("chat_reads")
+        .select("email,last_read_at")
+        .eq("conversation_id", conversationId);
+      if (error) throw error;
+      let max: string | null = null;
+      for (const r of data ?? []) {
+        if (lc(String(r.email)) === e) continue;
+        const t = r.last_read_at as string | null;
+        if (t && (!max || t > max)) max = t;
+      }
+      return max;
+    },
+    async () => {
+      const list = await readJson<ConvRead[]>("chat-reads.json", []);
+      let max: string | null = null;
+      for (const r of list) {
+        if (r.conversationId !== conversationId || lc(r.email) === e) continue;
+        if (!max || r.lastReadAt > max) max = r.lastReadAt;
+      }
+      return max;
+    },
+  );
+}
+
 // How many messages in a conversation the member hasn't seen yet — i.e. sent by
 // someone else after their last read.
 export async function unreadCount(

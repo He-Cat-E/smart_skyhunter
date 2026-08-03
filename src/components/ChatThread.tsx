@@ -37,6 +37,39 @@ function timeLabel(iso: string): string {
   return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
+// Read receipt: a single grey tick once sent, double blue ticks once the other
+// party has opened the thread past this message.
+function ReadTicks({ read }: { read: boolean }) {
+  return read ? (
+    <svg
+      viewBox="0 0 16 12"
+      aria-label="Read"
+      className="ml-1 inline-block h-3 w-4 align-middle text-sky-300"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M1 6.5l3 3 5-6" />
+      <path d="M6 6.5l3 3 5-6" />
+    </svg>
+  ) : (
+    <svg
+      viewBox="0 0 16 12"
+      aria-label="Sent"
+      className="ml-1 inline-block h-3 w-4 align-middle text-white/55"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6.5l3 3 5-6" />
+    </svg>
+  );
+}
+
 function dateLabel(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "";
@@ -56,6 +89,7 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [peerReadAt, setPeerReadAt] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
   const [input, setInput] = useState("");
@@ -110,6 +144,7 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
         setAvatarUrl(json.conversation?.avatarUrl ?? "");
         setMessages(json.messages ?? []);
         setTyping(json.typing ?? null);
+        setPeerReadAt(json.peerReadAt ?? null);
       }
     } catch {
       /* keep last state */
@@ -123,6 +158,7 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
     deadRef.current = false;
     setError("");
     setLoaded(false);
+    setPeerReadAt(null);
     countRef.current = 0;
     load(true);
     timerRef.current = setInterval(() => load(false), POLL_MS);
@@ -378,6 +414,10 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
         ) : (
           messages.map((m) => {
             const mine = m.senderEmail === me;
+            const read =
+              mine &&
+              !!peerReadAt &&
+              new Date(m.createdAt).getTime() <= new Date(peerReadAt).getTime();
             const day = new Date(m.createdAt).toDateString();
             const showDate = day !== lastDay;
             lastDay = day;
@@ -487,6 +527,7 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
                     >
                       {m.editedAt ? "edited · " : ""}
                       {timeLabel(m.createdAt)}
+                      {mine && <ReadTicks read={read} />}
                     </span>
                   </div>
                   {!mine && actions}
