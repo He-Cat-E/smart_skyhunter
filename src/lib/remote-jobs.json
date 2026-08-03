@@ -1,5 +1,26 @@
 [
   {
+    "id": "developer-support-remote",
+    "title": "Developer Support (Remote)",
+    "company": "SkyHunter Partners",
+    "location": "Remote (US · LATAM · Europe)",
+    "mode": "Remote",
+    "type": "Part-time",
+    "salary": "$2,500 – $3,000 / month",
+    "category": "Operations",
+    "status": "Hiring",
+    "postedDaysAgo": 0,
+    "humanEdge": "Developers still want a real person to turn to when something breaks or a call needs judgment — calm, clear help that a bot can't fully replace.",
+    "summary": "A flexible side role: lend developers a hand a few hours a week and earn solid extra income. Just 3–4 hours weekly, fully remote across the US, LATAM, and Europe.",
+    "responsibilities": [
+      "Answer developer questions and help triage incoming issues",
+      "Review and route support requests to the right place",
+      "Keep short, clear notes so recurring problems get fixed for good"
+    ],
+    "broughtFrom": "You already do this if you've done tech support, QA, or mentored other developers.",
+    "tags": ["Extra income", "3–4 hrs/week", "US · LATAM · Europe"]
+  },
+  {
     "id": "ai-conversation-rater",
     "title": "AI Conversation Quality Rater",
     "company": "Verity Labs",
