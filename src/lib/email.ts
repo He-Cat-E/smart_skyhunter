@@ -80,6 +80,53 @@ export async function sendContractMatchEmail(
   });
 }
 
+// Sent whenever an admin acts on a member's request — status change, interview
+// scheduled, or a request removed. Comes from support@skyhunterlab.online.
+export async function sendRequestUpdateEmail(opts: {
+  to: string;
+  name: string;
+  subject: string;
+  heading: string;
+  message: string;
+  cta?: { label: string; url: string };
+}): Promise<SendResult> {
+  const { to, name, subject, heading, message, cta } = opts;
+  const text =
+    `Hi ${name || "there"},\n\n${heading}\n\n${message}\n\n` +
+    (cta ? `${cta.label}: ${cta.url}\n\n` : "") +
+    `— The SkyHunter team\nsupport@skyhunterlab.online`;
+  return sendEmail({
+    to,
+    subject,
+    text,
+    html: requestUpdateHtml(name, heading, message, cta),
+  });
+}
+
+function requestUpdateHtml(
+  name: string,
+  heading: string,
+  message: string,
+  cta?: { label: string; url: string },
+): string {
+  return `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#1c1d1f">
+    <p style="font-size:20px;font-weight:700;margin:0 0 4px">SkyHunter</p>
+    <p style="color:#6a6f73;margin:0 0 24px">Build · Innovate · Elevate</p>
+    <p>Hi ${name || "there"},</p>
+    <p style="font-size:17px;font-weight:700;margin:18px 0 6px;color:#1c1d1f">${heading}</p>
+    <p style="line-height:1.6">${message}</p>
+    ${
+      cta
+        ? `<div style="text-align:center;margin:28px 0">
+      <a href="${cta.url}" style="display:inline-block;background:#8710d8;color:#ffffff;text-decoration:none;font-weight:600;padding:14px 28px;border-radius:12px">${cta.label}</a>
+    </div>
+    <p style="color:#6a6f73;font-size:14px">If the button doesn't work, copy this link into your browser:<br><a href="${cta.url}" style="color:#6d28d9">${cta.url}</a></p>`
+        : ""
+    }
+    <p style="color:#6a6f73;font-size:13px;margin-top:24px">Questions? Just reply to this email — support@skyhunterlab.online</p>
+  </div>`;
+}
+
 function contractHtml(
   name: string,
   partnerName: string,

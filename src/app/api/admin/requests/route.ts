@@ -9,6 +9,8 @@ import {
   applicationDelete,
 } from "@/lib/store";
 import { notifyUser } from "@/lib/notify";
+import { sendRequestUpdateEmail } from "@/lib/email";
+import { SITE_URL } from "@/lib/site";
 import {
   INTERVIEW_STATUSES,
   APPLICATION_STATUSES,
@@ -16,6 +18,9 @@ import {
 } from "@/lib/requests";
 
 export const runtime = "nodejs";
+
+const REQUESTS_URL = `${SITE_URL}/requests`;
+const JOBS_URL = `${SITE_URL}/jobs`;
 
 // Admin creates & sends a brand-new scheduled interview to any registered
 // member — even one who never requested one.
@@ -59,12 +64,23 @@ export async function POST(req: Request) {
   });
   if (row) {
     const linkLine = meetingLink ? ` Join here: ${meetingLink}` : "";
+    const whenText = formatSchedule(when.toISOString());
     await notifyUser(row.email, {
       type: `request:interview:${row.id}`,
       title: "Interview scheduled",
-      body: `The SkyHunter team scheduled an interview with you for ${formatSchedule(
-        when.toISOString(),
-      )}.${linkLine}`,
+      body: `The SkyHunter team scheduled an interview with you for ${whenText}.${linkLine}`,
+    });
+    await sendRequestUpdateEmail({
+      to: row.email,
+      name: row.name,
+      subject: "Your SkyHunter interview is scheduled",
+      heading: "Interview scheduled",
+      message: `The SkyHunter team scheduled an interview with you for ${whenText}.${
+        scheduleNote ? ` Note: ${scheduleNote}` : ""
+      }`,
+      cta: meetingLink
+        ? { label: "Join the interview", url: meetingLink }
+        : { label: "View your requests", url: REQUESTS_URL },
     });
   }
   return NextResponse.json({ ok: true, id: row?.id ?? null });
@@ -133,10 +149,23 @@ export async function PATCH(req: Request) {
         ? ` (${row.partner}${row.role ? ` – ${row.role}` : ""})`
         : "";
       const linkLine = meetingLink ? ` Join here: ${meetingLink}` : "";
+      const whenText = formatSchedule(when.toISOString());
       await notifyUser(row.email, {
         type: `request:interview:${row.id}`,
         title: "Interview scheduled",
-        body: `Your interview${context} is set for ${formatSchedule(when.toISOString())}.${linkLine}`,
+        body: `Your interview${context} is set for ${whenText}.${linkLine}`,
+      });
+      await sendRequestUpdateEmail({
+        to: row.email,
+        name: row.name,
+        subject: "Your SkyHunter interview is scheduled",
+        heading: "Interview scheduled",
+        message: `Your interview${context} is set for ${whenText}.${
+          scheduleNote ? ` Note: ${scheduleNote}` : ""
+        }`,
+        cta: meetingLink
+          ? { label: "Join the interview", url: meetingLink }
+          : { label: "View your requests", url: REQUESTS_URL },
       });
     }
     return NextResponse.json({ ok: true, notified: !!row });
@@ -151,12 +180,21 @@ export async function PATCH(req: Request) {
       const context = row.partner
         ? ` (${row.partner}${row.role ? ` – ${row.role}` : ""})`
         : "";
+      const msg = (INTERVIEW_MSG[status] ?? `Your request is now "${status}".`) + context;
       await notifyUser(row.email, {
         // The type carries the deep-link target (kind:id) so the bell can open
         // this exact request — no extra notifications column needed.
         type: `request:interview:${row.id}`,
         title: "Interview update",
-        body: (INTERVIEW_MSG[status] ?? `Your request is now "${status}".`) + context,
+        body: msg,
+      });
+      await sendRequestUpdateEmail({
+        to: row.email,
+        name: row.name,
+        subject: `Interview update — your request is now "${status}"`,
+        heading: "Interview update",
+        message: msg,
+        cta: { label: "View your requests", url: REQUESTS_URL },
       });
     }
     return NextResponse.json({ ok: true, notified: !!row });
@@ -168,10 +206,20 @@ export async function PATCH(req: Request) {
     }
     const row = await applicationUpdateStatus(id, status);
     if (row) {
+      const msg = applicationMsg(row.jobTitle, status);
       await notifyUser(row.email, {
         type: `request:application:${row.id}`,
         title: "Application update",
-        body: applicationMsg(row.jobTitle, status),
+        body: msg,
+      });
+      const applicant = await findUser(row.email);
+      await sendRequestUpdateEmail({
+        to: row.email,
+        name: applicant?.name || row.email.split("@")[0],
+        subject: `Application update — ${row.jobTitle || "your application"}`,
+        heading: "Application update",
+        message: msg,
+        cta: { label: "View your requests", url: REQUESTS_URL },
       });
     }
     return NextResponse.json({ ok: true, notified: !!row });
@@ -201,10 +249,19 @@ export async function DELETE(req: Request) {
       const context = row.partner
         ? ` (${row.partner}${row.role ? ` – ${row.role}` : ""})`
         : "";
+      const msg = `Your interview request${context} was removed by the SkyHunter team. Reach out to support if you have questions.`;
       await notifyUser(row.email, {
         type: "request-update",
         title: "Interview request removed",
-        body: `Your interview request${context} was removed by the SkyHunter team. Reach out to support if you have questions.`,
+        body: msg,
+      });
+      await sendRequestUpdateEmail({
+        to: row.email,
+        name: row.name,
+        subject: "Your SkyHunter interview request was removed",
+        heading: "Interview request removed",
+        message: msg,
+        cta: { label: "View your requests", url: REQUESTS_URL },
       });
     }
     return NextResponse.json({ ok: true, deleted: !!row, notified: !!row });
@@ -213,10 +270,20 @@ export async function DELETE(req: Request) {
   if (type === "application") {
     const row = await applicationDelete(id);
     if (row) {
+      const msg = `Your application for ${row.jobTitle || "a role"} was removed by the SkyHunter team. You can re-apply anytime.`;
       await notifyUser(row.email, {
         type: "request-update",
         title: "Application removed",
-        body: `Your application for ${row.jobTitle || "a role"} was removed by the SkyHunter team. You can re-apply anytime.`,
+        body: msg,
+      });
+      const applicant = await findUser(row.email);
+      await sendRequestUpdateEmail({
+        to: row.email,
+        name: applicant?.name || row.email.split("@")[0],
+        subject: "Your SkyHunter application was removed",
+        heading: "Application removed",
+        message: msg,
+        cta: { label: "Browse open roles", url: JOBS_URL },
       });
     }
     return NextResponse.json({ ok: true, deleted: !!row, notified: !!row });
