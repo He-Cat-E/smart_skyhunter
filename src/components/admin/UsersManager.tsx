@@ -228,7 +228,7 @@ export function UsersManager({
                 key={u.email}
                 onClick={() => setSelected(u)}
                 title="View full details"
-                className={`cursor-pointer transition-colors ${u.suspended ? "bg-red-50/60 hover:bg-red-50" : "bg-void/40 hover:bg-abyss"}`}
+                className={`cursor-pointer transition-colors ${u.suspended ? "bg-red-500/10 hover:bg-red-500/15" : "bg-void/40 hover:bg-abyss"}`}
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
@@ -255,7 +255,7 @@ export function UsersManager({
                           </span>
                         )}
                         {u.suspended && (
-                          <span className="ml-2 rounded bg-red-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-red-600 ring-1 ring-red-500/25">
+                          <span className="ml-2 rounded bg-red-500/15 px-1.5 py-0.5 text-[0.65rem] font-semibold text-red-400 ring-1 ring-red-500/30">
                             SUSPENDED
                           </span>
                         )}
@@ -332,7 +332,7 @@ export function UsersManager({
                       className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-40 ${
                         u.suspended
                           ? "border-cyan/40 text-cyan hover:bg-cyan/10"
-                          : "border-amber-300 text-amber-600 hover:bg-amber-50"
+                          : "border-amber-400/40 text-amber-500 hover:bg-amber-400/10"
                       }`}
                     >
                       {u.suspended ? "Unsuspend" : "Suspend"}
@@ -340,7 +340,7 @@ export function UsersManager({
                     <button
                       onClick={() => del(u)}
                       disabled={busy === u.email || u.email === currentEmail}
-                      className="rounded-lg border border-red-300 px-2.5 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-40"
+                      className="rounded-lg border border-red-500/40 px-2.5 py-1 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/10 disabled:opacity-40"
                     >
                       Delete
                     </button>
