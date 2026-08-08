@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { FooterPrimaryCta, FooterAccountLinks } from "./FooterCtas";
 
 export function Footer() {
   return (
@@ -12,12 +13,7 @@ export function Footer() {
               The elevated job platform for people rising above the AI shakeup.
               Build. Innovate. Elevate.
             </p>
-            <Link
-              href="/signup"
-              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-400"
-            >
-              Join SkyHunter — it&apos;s free
-            </Link>
+            <FooterPrimaryCta />
           </div>
 
           <div>
@@ -59,16 +55,7 @@ export function Footer() {
                   Call, text, or chat 988
                 </a>
               </li>
-              <li>
-                <Link href="/signup" className="text-blue-300 hover:text-blue-400">
-                  Create your free account →
-                </Link>
-              </li>
-              <li>
-                <Link href="/signin" className="hover:text-blue-300">
-                  Sign in
-                </Link>
-              </li>
+              <FooterAccountLinks />
             </ul>
           </div>
         </div>
